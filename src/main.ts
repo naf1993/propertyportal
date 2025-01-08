@@ -22,6 +22,8 @@ async function bootstrap() {
   console.log('this is propetis length',properties.length)
 
 
+
+  
   app.enableCors({ origin: process.env.CORS_ORIGIN, methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true });
 
