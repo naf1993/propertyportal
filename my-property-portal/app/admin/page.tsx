@@ -16,7 +16,7 @@ interface PropertyResponse {
   totalPages: number;
 }
 
-const API_URL=process.env.NEXT_BACKEND_API_URL
+const API_URL=process.env.NEXT_PUBLIC_BACKEND_API_URL
 const AdminDashboard = () => {
   const [properties, setProperties] = useState<Property[]>([]);
   const markerPosition: [number, number] = [

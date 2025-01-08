@@ -4,6 +4,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { FaLocationPin } from "react-icons/fa6";
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_API_URL;
+
 interface MapComponentProps {
   center: [number, number] | null;
   markerPosition: [number, number] | null;

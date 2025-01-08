@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { useParams,useRouter } from "next/navigation"; // useParams hook to get dynamic ID
 
-const API_URL=process.env.NEXT_BACKEND_API_URL
+
+const API_URL=process.env.NEXT_PUBLIC_BACKEND_API_URL
 
 const PropertyDetailPage: React.FC = () => {
   const { id } = useParams();  // Get the property ID from the dynamic route
