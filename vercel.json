@@ -1,15 +1,14 @@
+
 {
   "version": 2,
   "builds": [
-    {
-      "src": "my-property-portal/package.json",
-      "use": "@vercel/next"
-    }
+    { "src": "my-property-portal/package.json", "use": "@vercel/next" }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "/$1"
+      "source": "/(.*)",
+      "destination": "/"
     }
   ]
 }
+
