@@ -12,7 +12,7 @@ import MapComponent2 from "./components/MapComponent2";
 // import 'mapbox-gl/dist/mapbox-gl.css';
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_API_URL;
-const API_URL=process.env.NEXT_BACKEND_API_URL
+const API_URL=process.env.NEXT_PUBLIC_BACKEND_API_URL
 
 interface Location {
   label: string;
@@ -27,6 +27,8 @@ interface PropertyResponse {
 }
 
 export default function Home() {
+  console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [locations, setLocations] = useState<Location[]>([]); // Array of locations with label and value
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(
