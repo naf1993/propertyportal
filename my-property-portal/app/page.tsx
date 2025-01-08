@@ -12,6 +12,7 @@ import MapComponent2 from "./components/MapComponent2";
 // import 'mapbox-gl/dist/mapbox-gl.css';
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_API_URL;
+const API_URL=process.env.NEXT_BACKEND_API_URL
 
 interface Location {
   label: string;
@@ -49,7 +50,7 @@ export default function Home() {
     setLoadingProducts(true);
     try {
       const response = await axios.get<PropertyResponse>(
-        "http://localhost:5000/api/properties",
+        `${API_URL}/api/properties`,
         {
           params: {
             page,

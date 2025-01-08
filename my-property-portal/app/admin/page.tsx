@@ -16,6 +16,7 @@ interface PropertyResponse {
   totalPages: number;
 }
 
+const API_URL=process.env.NEXT_BACKEND_API_URL
 const AdminDashboard = () => {
   const [properties, setProperties] = useState<Property[]>([]);
   const markerPosition: [number, number] = [
@@ -33,7 +34,7 @@ const AdminDashboard = () => {
     setLoadingProducts(true);
     try {
       const response = await axios.get<PropertyResponse>(
-        "http://localhost:5000/api/properties",
+        `${API_URL}/api/properties`,
         {
           params: {
             page,

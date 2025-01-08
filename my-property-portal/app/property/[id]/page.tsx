@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useParams,useRouter } from "next/navigation"; // useParams hook to get dynamic ID
 
+const API_URL=process.env.NEXT_BACKEND_API_URL
+
 const PropertyDetailPage: React.FC = () => {
   const { id } = useParams();  // Get the property ID from the dynamic route
   const router = useRouter();
@@ -14,7 +16,7 @@ const PropertyDetailPage: React.FC = () => {
         console.log(id)
       const fetchProperty = async () => {
         try {
-          const res = await fetch(`http://localhost:5000/api/properties/${id}`);
+          const res = await fetch(`${API_URL}/api/properties/${id}`);
           if (!res.ok) {
             throw new Error("Property not found");
           }

@@ -5,8 +5,10 @@ import path from 'path';
 import * as express from 'express';
 import { properties } from 'data';
 import { PropertyService } from './property/property.service';
+import * as dotenv from 'dotenv';
 
 async function bootstrap() {
+  dotenv.config({ path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env', });
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Serve static assets from the 'public/uploads' directory
@@ -19,11 +21,9 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   console.log('this is propetis length',properties.length)
 
-  app.enableCors({
-    origin: 'http://localhost:3000', // Replace with your frontend URL
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
-  });
+
+  app.enableCors({ origin: process.env.CORS_ORIGIN, methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true });
 
   await app.listen(5000);
 
