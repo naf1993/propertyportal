@@ -1,12 +1,13 @@
-# Ignore node_modules for both frontend (Next.js) and backend (NestJS)
+# Ignore node_modules
 node_modules/
 
-# Ignore Next.js build output (frontend)
+backend/
+# Ignore build output from NestJS (now at the root)
+dist/
+
+# Ignore build output from Next.js frontend (assuming it's still in the subdirectory)
 my-property-portal/.next/
 my-property-portal/out/
-
-# Ignore NestJS build output (backend)
-backend/dist/
 
 # Ignore all .env files across the project
 .env
