@@ -31,16 +31,13 @@ const fetchData = async (page: number, limit: number) => {
   }
 };
 
-export default async function Page({
-  searchParams,
-}: {
-  searchParams: URLSearchParams;
-}) {
-  // Convert searchParams to an object
-  const params = Object.fromEntries(searchParams.entries());
+interface PageProps {
+  searchParams: { [key: string]: string | string[] | undefined };
+}
 
+export default async function Page({ searchParams }: PageProps) {
   // Destructure searchParams with fallback defaults
-  const { page = '1', limit = '6' } = params;
+  const { page = '1', limit = '6' } = searchParams;
 
   // Convert page and limit to numbers
   const pageNumber = Number(page);
@@ -51,12 +48,10 @@ export default async function Page({
   console.log('Fetched Data:', data);
 
   return (
-   <>
-     <Home
+    <>
+      <Home
         {...data} // Pass properties and pagination data to the Home component
       />
-   </>
-    
-   
+    </>
   );
 }
