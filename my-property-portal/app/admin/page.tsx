@@ -34,10 +34,13 @@ const fetchData = async (page: number, limit: number) => {
 export default async function Page({
   searchParams,
 }: {
-  searchParams: { page: string; limit: string }; // Automatically handled by Next.js
+  searchParams: URLSearchParams;
 }) {
+  // Convert searchParams to an object
+  const params = Object.fromEntries(searchParams.entries());
+
   // Destructure searchParams with fallback defaults
-  const { page = '1', limit = '6' } = searchParams;
+  const { page = '1', limit = '6' } = params;
 
   // Convert page and limit to numbers
   const pageNumber = Number(page);
@@ -48,10 +51,12 @@ export default async function Page({
   console.log('Fetched Data:', data);
 
   return (
-    <>
-      <Home
+   <>
+     <Home
         {...data} // Pass properties and pagination data to the Home component
       />
-    </>
+   </>
+    
+   
   );
 }
