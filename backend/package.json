@@ -8,8 +8,7 @@
   "scripts": {
     "start": "nest start", 
     "start:prod": "node dist/main.js", 
-    "build": "nest build",
-    "heroku-postbuild": "cd backend && npm install && npm run build",  
+    "build": "nest build", 
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",   
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",   
