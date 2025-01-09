@@ -32,7 +32,6 @@ const fetchData = async (page: number, limit: number) => {
 };
 
 
-
 export default async function Page({ params }: { params: Promise<{ page: string, limit: string }> }) {
   // Wait for the Promise to resolve, then destructure with fallback defaults
   const { page = '1', limit = '12' } = await params;

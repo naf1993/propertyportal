@@ -38,21 +38,24 @@ const fetchData = async (page: number, limit: number) => {
   }
 };
 
-export default async function Page({ searchParams }: { searchParams: { page: string; limit: string } }) {
-  const { page = "1", limit = "6" } = searchParams;
+export default async function Page({ params }: { params: Promise<{ page: string, limit: string }> }) {
+  // Wait for the Promise to resolve, then destructure with fallback defaults
+  const { page = '1', limit = '12' } = await params;
 
-  // Parse page and limit to numbers
+  // Convert page and limit to numbers
   const pageNumber = Number(page);
   const limitNumber = Number(limit);
 
-  // Log parsed values for debugging
-  console.log('Parsed searchParams:', { pageNumber, limitNumber });
-
-  // Fetch the data from the server
+  // Fetch data
   const data = await fetchData(pageNumber, limitNumber);
-
-  // Log the fetched data for debugging
   console.log('Fetched Data:', data);
 
-  return <Home {...data} />;  // Pass the fetched data to the Home Client Component
+  return (
+    <>
+      <Home
+        {...data} // Pass properties and pagination data to the Home component
+      />
+    </>
+  );
 }
+
