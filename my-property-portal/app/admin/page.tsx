@@ -32,7 +32,7 @@ const fetchData = async (page: number, limit: number) => {
 };
 
 interface PageProps {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: { page?: string; limit?: string };
 }
 
 export default async function Page({ searchParams }: PageProps) {
