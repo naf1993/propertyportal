@@ -10,10 +10,9 @@ import MapComponent1 from "./MapComponent1";
 import { v4 as uuidv4 } from "uuid";
 import { AiOutlineClose } from "react-icons/ai";
 
-// const MapComponent = dynamic(() => import("./MapComponent"), { ssr: false });
 
-mapboxgl.accessToken =
-  "pk.eyJ1IjoibmFmaXRoYTE5OTMiLCJhIjoiY20zNjZjNGdkMDFxbzJ2cjN3NDI0bmtrMyJ9.CTDy-y4WdqtWNxgd4A9oMA";
+
+mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_API_URL
 
 interface ModalProps {
   isOpen: boolean;

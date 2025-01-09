@@ -1,3 +1,4 @@
+'use client'
 import React, { useEffect, useState, useRef } from "react";
 import ReactMapGL, { Marker } from "react-map-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
