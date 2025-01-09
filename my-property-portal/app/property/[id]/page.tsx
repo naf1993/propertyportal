@@ -4,10 +4,13 @@ import { notFound } from 'next/navigation';
 // Assuming API URL is defined in `.env.local`
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 
-export async function generateMetadata({ params }: { params: { id: string } }) {
-  // Fetch property data for metadata like title, description, etc.
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   try {
-    const res = await fetch(`${API_URL}/api/properties/${params.id}`);
+    // Await the params to access id
+    const { id } = await params;
+
+    // Fetch property data for metadata like title, description, etc.
+    const res = await fetch(`${API_URL}/api/properties/${id}`);
     if (!res.ok) throw new Error('Property not found');
     const property = await res.json();
     
@@ -24,10 +27,13 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
   }
 }
 
-export default async function PropertyDetailPage({ params }: { params: { id: string } }) {
-  // Fetch property data on the server
+export default async function PropertyDetailPage({ params }: { params: Promise<{ id: string }> }) {
   try {
-    const res = await fetch(`${API_URL}/api/properties/${params.id}`);
+    // Await the params to access id
+    const { id } = await params;
+
+    // Fetch property data on the server
+    const res = await fetch(`${API_URL}/api/properties/${id}`);
     if (!res.ok) {
       throw new Error("Property not found");
     }
