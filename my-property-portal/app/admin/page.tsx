@@ -1,11 +1,8 @@
-// app/admin/page.tsx
-
 import axios from 'axios';
-import AdminLayout from './layout';
 import Home from './Home'; // Client Component
 import { Property } from '../types';
 
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 
 const fetchData = async (page: number, limit: number) => {
   try {
@@ -38,18 +35,23 @@ export default async function Page({
 }: {
   searchParams: { page: string; limit: string };
 }) {
-  const { page = '1', limit = '6' } = await searchParams;
+  // No need to await `searchParams`, just destructure them directly
+  const { page = '1', limit = '6' } = searchParams;
+
   const pageNumber = Number(page);
   const limitNumber = Number(limit);
 
+  // Fetch data using the extracted values
   const data = await fetchData(pageNumber, limitNumber);
   console.log('Fetched Data:', data);
 
   return (
-    
-      <Home
+  <>
+   <Home
         {...data} // Pass properties and pagination data to the Home component
       />
-  
+  </>
+     
+    
   );
 }
