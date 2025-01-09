@@ -31,18 +31,12 @@ const fetchData = async (page: number, limit: number) => {
   }
 };
 
-// Explicit typing for searchParams as an object
-type PageProps = {
-  searchParams: {
-    page: string;
-    limit: string;
-  };
-};
-
 export default async function Page({
   searchParams,
-}: PageProps) {
-  // Destructure searchParams and ensure we get default values
+}: {
+  searchParams: { page: string; limit: string }; // Automatically handled by Next.js
+}) {
+  // Destructure searchParams with fallback defaults
   const { page = '1', limit = '6' } = searchParams;
 
   // Convert page and limit to numbers
@@ -55,11 +49,9 @@ export default async function Page({
 
   return (
     <>
-     <Home
+      <Home
         {...data} // Pass properties and pagination data to the Home component
       />
     </>
-     
-   
   );
 }
