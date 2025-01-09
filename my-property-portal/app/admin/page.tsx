@@ -1,4 +1,5 @@
 import axios from 'axios';
+import AdminLayout from './layout';
 import Home from './Home'; // Client Component
 import { Property } from '../types';
 
@@ -30,28 +31,35 @@ const fetchData = async (page: number, limit: number) => {
   }
 };
 
+// Explicit typing for searchParams as an object
+type PageProps = {
+  searchParams: {
+    page: string;
+    limit: string;
+  };
+};
+
 export default async function Page({
   searchParams,
-}: {
-  searchParams: { page: string; limit: string };
-}) {
-  // No need to await `searchParams`, just destructure them directly
+}: PageProps) {
+  // Destructure searchParams and ensure we get default values
   const { page = '1', limit = '6' } = searchParams;
 
+  // Convert page and limit to numbers
   const pageNumber = Number(page);
   const limitNumber = Number(limit);
 
-  // Fetch data using the extracted values
+  // Fetch data
   const data = await fetchData(pageNumber, limitNumber);
   console.log('Fetched Data:', data);
 
   return (
-  <>
-   <Home
+    <>
+     <Home
         {...data} // Pass properties and pagination data to the Home component
       />
-  </>
+    </>
      
-    
+   
   );
 }
