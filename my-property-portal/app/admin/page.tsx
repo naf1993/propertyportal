@@ -31,13 +31,11 @@ const fetchData = async (page: number, limit: number) => {
   }
 };
 
-interface PageProps {
-  searchParams: { page?: string; limit?: string };
-}
 
-export default async function Page({ searchParams }: PageProps) {
-  // Destructure searchParams with fallback defaults
-  const { page = '1', limit = '6' } = searchParams;
+
+export default async function Page({ params }: { params: Promise<{ page: string, limit: string }> }) {
+  // Wait for the Promise to resolve, then destructure with fallback defaults
+  const { page = '1', limit = '12' } = await params;
 
   // Convert page and limit to numbers
   const pageNumber = Number(page);
