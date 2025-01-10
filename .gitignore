@@ -20,3 +20,9 @@ backend/dist/
 
 # Ignore VSCode settings
 .vscode/
+
+# Ignore macOS system files
+.DS_Store
+
+# Ignore Windows system files
+Thumbs.db
