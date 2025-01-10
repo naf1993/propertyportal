@@ -1,2 +1,0 @@
-# Procfile inside the backend directory
-web: npm run start:prod

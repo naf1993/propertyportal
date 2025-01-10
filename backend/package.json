@@ -6,12 +6,12 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "start": "nest start",
-    "start:prod": "node dist/main",
-    "start:dev": "nest start --watch",
-    "build": "nest build",
-    "test": "jest --config jest.config.js",
-    "heroku-postbuild": "npm run build && npm install --only=prod"
+    "start": "cd backend && npm run start",
+    "start:prod": "cd backend && npm run start:prod",
+    "start:dev": "cd backend && npm run start:dev",
+    "build": "cd backend && npm run build",
+    "test": "cd backend && npm run test",
+    "heroku-postbuild": "cd backend && npm run build && npm install --only=prod"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

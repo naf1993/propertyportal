@@ -10,8 +10,10 @@ import { join } from 'path';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true,  // Makes the config available globally
+      envFilePath: '.env',
+      isGlobal: true,
     }),
+    
     MongooseModule.forRoot(process.env.MONGO_URL ?? (() => {
       throw new Error('MONGO_URL is not defined in the environment variables!');
     })()),
