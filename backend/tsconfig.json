@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
+  "baseUrl": "./",
+    "paths": {
+      "src/*": ["backend/src/*"]
+    },
     "outDir": "./dist",
     "rootDir": "./src",
     "module": "commonjs",

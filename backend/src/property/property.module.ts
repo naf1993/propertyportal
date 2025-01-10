@@ -3,7 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { PropertyService } from './property.service';
 import { PropertyController } from './property.controller';
 import { PropertySchema } from './property.schema';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 
 @Module({

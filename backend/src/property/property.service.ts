@@ -9,7 +9,7 @@ import { Property } from './property.schema';
 import * as fs from 'fs';
 import * as path from 'path';
 import { randomInt } from 'crypto';
-import { properties } from 'data';
+// import { properties } from '../../data'
 import { CreatePropertyDto, UpdatePropertyDto } from './property.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
@@ -20,54 +20,54 @@ export class PropertyService {
     private readonly cloudinaryService: CloudinaryService,
   ) {}
 
-  async createProperties() {
-    // Clear the existing properties before insertion
-    await this.propertyModel.deleteMany({});
-    console.log('Cleared existing properties from the database.');
+  // async createProperties() {
+  //   // Clear the existing properties before insertion
+  //   await this.propertyModel.deleteMany({});
+  //   console.log('Cleared existing properties from the database.');
 
-    const imageFolderPath = path.join(process.cwd(), 'images');
-    console.log('Images folder path:', imageFolderPath);
+  //   const imageFolderPath = path.join(process.cwd(), 'images');
+  //   console.log('Images folder path:', imageFolderPath);
 
-    if (!fs.existsSync(imageFolderPath)) {
-      console.error('Images folder does not exist at path:', imageFolderPath);
-      return;
-    }
+  //   if (!fs.existsSync(imageFolderPath)) {
+  //     console.error('Images folder does not exist at path:', imageFolderPath);
+  //     return;
+  //   }
 
-    const imageFiles = fs.readdirSync(imageFolderPath);
-    console.log('Image Files:', imageFiles); // Log the list of image files
+  //   const imageFiles = fs.readdirSync(imageFolderPath);
+  //   console.log('Image Files:', imageFiles); // Log the list of image files
 
-    const newProperties = await Promise.all(
-      properties.map(async (property, index) => {
-        console.log(`Processing property ${index + 1}: ${property.title}`);
-        const randomImageIndex = randomInt(0, imageFiles.length);
-        const selectedImage = imageFiles[randomImageIndex];
-        console.log(`Selected image: ${selectedImage}`);
+  //   const newProperties = await Promise.all(
+  //     properties.map(async (property, index) => {
+  //       console.log(`Processing property ${index + 1}: ${property.title}`);
+  //       const randomImageIndex = randomInt(0, imageFiles.length);
+  //       const selectedImage = imageFiles[randomImageIndex];
+  //       console.log(`Selected image: ${selectedImage}`);
 
-        const imagePath = path.join(imageFolderPath, selectedImage);
-        console.log(`Uploading image from ${imagePath} to Cloudinary`);
+  //       const imagePath = path.join(imageFolderPath, selectedImage);
+  //       console.log(`Uploading image from ${imagePath} to Cloudinary`);
 
-        // Read the image file and upload to Cloudinary
-        const imageBuffer = fs.readFileSync(imagePath);
-        const uploadResult = await this.cloudinaryService.uploadImage(
-          imageBuffer,
-          selectedImage,
-        );
+  //       // Read the image file and upload to Cloudinary
+  //       const imageBuffer = fs.readFileSync(imagePath);
+  //       const uploadResult = await this.cloudinaryService.uploadImage(
+  //         imageBuffer,
+  //         selectedImage,
+  //       );
 
-        return {
-          ...property,
-          image: uploadResult.secure_url, // Use the URL returned from Cloudinary
-        };
-      }),
-    );
+  //       return {
+  //         ...property,
+  //         image: uploadResult.secure_url, // Use the URL returned from Cloudinary
+  //       };
+  //     }),
+  //   );
 
-    console.log(
-      'Inserting new properties into the database:',
-      newProperties.length,
-    );
-    const result = await this.propertyModel.insertMany(newProperties);
-    console.log('Inserted properties:', result.length);
-    return result;
-  }
+  //   console.log(
+  //     'Inserting new properties into the database:',
+  //     newProperties.length,
+  //   );
+  //   const result = await this.propertyModel.insertMany(newProperties);
+  //   console.log('Inserted properties:', result.length);
+  //   return result;
+  // }
 
   async create(propertyDto: CreatePropertyDto) {
     const createdProperty = new this.propertyModel(propertyDto);
@@ -157,11 +157,27 @@ export class PropertyService {
     if (!property) {
       throw new NotFoundException('Property not found');
     }
-    const publicId = property.image.split('/').pop().split('.')[0];
+  
+    // Check if the image exists and get the publicId
+    const imageUrl = property?.image;
+    if (!imageUrl) {
+      console.log('No image found for the property.');
+      return; // No image to delete
+    }
+  
+    const publicId = imageUrl.split('/').pop()?.split('.')[0]; // This will return `undefined` if imageUrl is not valid
+    if (publicId) {
+      await this.cloudinaryService.deleteImage(publicId);
+      console.log('Deleted image from Cloudinary:', publicId);
+    } else {
+      console.error('Invalid image URL format, publicId could not be extracted');
+    }
+  
+    // Now delete the property
     await this.propertyModel.findByIdAndDelete(id);
-    await this.cloudinaryService.deleteImage(publicId);
-    console.log('Deleted property and associated image:', property);
+    console.log('Deleted property from database:', property);
   }
+  
 }
 
 // Create a property

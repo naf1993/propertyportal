@@ -17,7 +17,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { CreatePropertyDto, UpdatePropertyDto } from './property.dto';
 import { Property } from './property.schema';
 import { Request } from 'express';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import sharp from 'sharp';
 
 @Controller('properties')

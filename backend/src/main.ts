@@ -4,9 +4,12 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import path from 'path';
 import * as express from 'express';
 import * as dotenv from 'dotenv';
+import { join } from 'path';
 
 async function bootstrap() {
-  dotenv.config({ path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env' });
+  // Load environment variables from the .env file in the project root
+  dotenv.config({ path: join(__dirname, '../../.env') });
+
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Serve static assets from the 'public/uploads' directory
