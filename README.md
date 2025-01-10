@@ -3,6 +3,11 @@
 ### Overview
 This project is a comprehensive property portal platform developed using the Nextjs Typescript Nestjs Mongodb Tailwindcss. It includes features such as property management and an admin panel for managing properties.
 
+### Screenshots
+
+#### Home Page
+![Home Page](assets/image1.png)
+
 ### Features
 
 #### Frontend
