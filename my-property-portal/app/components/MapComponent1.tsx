@@ -25,6 +25,7 @@ const MapComponent1: React.FC<MapComponentProps> = ({
   });
 
   useEffect(() => {
+    console.log('hello')
     if (center) {
       setViewport((prev) => ({
         ...prev,
