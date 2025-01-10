@@ -4,6 +4,7 @@
     "rootDir": "./src",
     "module": "commonjs",
     "target": "es2017",
+    "esModuleInterop": true,
     "moduleResolution": "node",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
