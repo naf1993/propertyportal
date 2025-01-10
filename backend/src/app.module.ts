@@ -22,6 +22,8 @@ import { join } from 'path';
   controllers: [AppController],
   providers: [AppService],
 })
+
+
 export class AppModule {
   constructor() {
     console.log('All environment variables:', process.env); // Log environment variables for debugging
