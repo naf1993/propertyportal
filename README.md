@@ -25,8 +25,8 @@ This project is a comprehensive property portal platform developed using the Nex
 ### Installation
 1. **Clone the repository**
    ```sh
-   git clone https://github.com/naf1993/mernclothingstore.git
-   cd mern-ecommerce-clothing-store
+   https://github.com/naf1993/propertyportal.git
+   cd propertyportal
 
 2. **Install server dependencies**
     ```sh
