@@ -1,7 +1,7 @@
 import axios from "axios";
 import Home from "./Home";  // Import the Client Component
+import {API_URL} from './apiUrl'
 
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL
 // Server-side data fetching
 const fetchData = async (page: number, limit: number) => {
   try {
@@ -9,8 +9,9 @@ const fetchData = async (page: number, limit: number) => {
       params: { page, limit },
     });
 
-    // Log the API response for debugging
+    console.log('total properites',propertiesResponse.data.properties.length)
     console.log('API Response:', propertiesResponse.data);
+  
 
     // Get the actual data from the API response
     const totalProperties = Number(propertiesResponse.data.totalProperties); // The correct key

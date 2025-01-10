@@ -2,8 +2,8 @@ import axios from 'axios';
 import AdminLayout from './layout';
 import Home from './Home'; // Client Component
 import { Property } from '../types';
+import { API_URL } from '../apiUrl';
 
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 
 const fetchData = async (page: number, limit: number) => {
   try {

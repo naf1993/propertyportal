@@ -1,8 +1,6 @@
 // app/properties/[id]/page.tsx
 import { notFound } from 'next/navigation';
-
-// Assuming API URL is defined in `.env.local`
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
+import { API_URL } from '@/app/apiUrl';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   try {
