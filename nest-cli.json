@@ -1,5 +1,0 @@
-{
-  "compilerOptions": {
-    "tsConfigPath": "backend/tsconfig.json"
-  }
-}
