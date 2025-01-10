@@ -8,6 +8,12 @@ This project is a comprehensive property portal platform developed using the Nex
 #### Home Page
 ![Home Page](assets/image1.png)
 
+#### Properties
+![Home Page](assets/image2.png)
+
+#### Map
+![Home Page](assets/image3.png)
+
 ### Features
 
 #### Frontend
