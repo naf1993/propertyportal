@@ -38,13 +38,15 @@ jobs:
       - name: Set up Heroku CLI
         run: |
           curl https://cli-assets.heroku.com/install.sh | sh
-          echo ${{ secrets.HEROKU_API_KEY }} | heroku auth:token
+
+      # Login to Heroku using the API key
+      - name: Login to Heroku
+        run: echo ${{ secrets.HEROKU_API_KEY }} | heroku auth:token
 
       # Build and push the Docker image using Docker Compose
       - name: Build and push Docker image
         run: |
           docker-compose -f docker-compose.yml build backend  # Build the backend service
-          echo ${{ secrets.HEROKU_API_KEY }} | docker login --username=_ --password-stdin registry.heroku.com
           docker-compose -f docker-compose.yml push backend  # Push the Docker image to Heroku registry
 
       # Release the app on Heroku
