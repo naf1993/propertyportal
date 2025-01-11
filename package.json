@@ -11,10 +11,7 @@
     "start:dev": "cd backend && npm run start:dev",
     "build": "cd backend && npm run build",
     "test": "cd backend && npm run test",
- "heroku-postbuild": "cd backend && npm install && npx nest build && npm install --only=prod"
-
-
-
+ "heroku-postbuild": "cd backend && npm install && npm run build && npm install --only=prod"
   },
   "dependencies": {
     "@nestjs/core": "^10.0.0",
