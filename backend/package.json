@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "start": "nest start",
-    "start:prod": "node dist/main",
+    "start:prod": "node dist/src/main",
     "start:dev": "nest start --watch",
     "build": "nest build",
     "test": "jest --config jest.config.js"
