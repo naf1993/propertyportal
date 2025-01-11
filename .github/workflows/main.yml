@@ -1,28 +1,53 @@
-name: CI/CD
+name: CI/CD - Backend Deployment to Heroku
 
 on:
   push:
     branches:
-      - master
+      - master  # Trigger CI/CD pipeline for the master branch
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      # Checkout repository code
+      - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Login to Heroku
-        uses: actions/heroku@1.0.0
-        with:
-          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-          heroku_app_name: your-heroku-app-name
+      # Set up Docker Buildx (for building multi-platform Docker images)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
 
-      - name: Build and Deploy
+      # Cache Docker layers to speed up builds
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-docker-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-docker-
+
+      # Log in to DockerHub (using GitHub secrets for Docker login credentials)
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Set up Heroku CLI
+      - name: Set up Heroku CLI
         run: |
-          cd backend
-          docker-compose build
-          docker-compose push
-          heroku container:push web -a property-portal-backend
-          heroku container:release web -a property-portal-backend
+          curl https://cli-assets.heroku.com/install.sh | sh
+          echo ${{ secrets.HEROKU_API_KEY }} | heroku auth:token
+
+      # Build and push the Docker image using Docker Compose
+      - name: Build and push Docker image
+        run: |
+          docker-compose -f docker-compose.yml build backend  # Build the backend service
+          echo ${{ secrets.HEROKU_API_KEY }} | docker login --username=_ --password-stdin registry.heroku.com
+          docker-compose -f docker-compose.yml push backend  # Push the Docker image to Heroku registry
+
+      # Release the app on Heroku
+      - name: Release the app on Heroku
+        run: |
+          heroku releases:restart -a property-portal-backend  # Restart the app to apply the new Docker image
