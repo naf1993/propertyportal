@@ -11,7 +11,7 @@
     "start:dev": "cd backend && npm run start:dev",
     "build": "cd backend && npm run build",
     "test": "cd backend && npm run test",
-   "heroku-postbuild": "cd backend && npm run build && npm install --only=prod"
+  "heroku-postbuild": "npm run build --prefix backend && npm install --only=prod"
 
   },
   "dependencies": {
