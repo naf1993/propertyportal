@@ -13,6 +13,9 @@ RUN npm install
 # Copy the rest of the backend folder into the container
 COPY . .
 
+# List files to ensure tsconfig.json is copied correctly
+RUN ls -la /usr/src/app
+
 # Build the project
 RUN npm run build
 
