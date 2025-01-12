@@ -1,19 +1,20 @@
+# Use Node 18 image as the base
 FROM node:18
 
-# Set the working directory
+# Set the working directory to /usr/src/app
 WORKDIR /usr/src/app
 
-# Copy package.json and install dependencies
+# Copy package.json and package-lock.json from the backend folder to the container
 COPY package*.json ./
+
+# Install dependencies
 RUN npm install
 
-# Copy the entire application
+# Copy the rest of the backend folder into the container
 COPY . .
 
-# Build the NestJS project
+# Build the project
 RUN npm run build
 
-# Expose the port (adjust as needed)
-EXPOSE 5000
-# Start the app in production mode
-CMD ["node", "dist/main"]
+# Start the app
+CMD ["npm", "run", "start:prod"]
