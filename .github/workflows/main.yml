@@ -3,7 +3,7 @@ name: CI/CD - Backend Deployment to Heroku
 on:
   push:
     branches:
-      - master  # Trigger CI/CD pipeline for the master branch
+      - master
 
 jobs:
   deploy:
@@ -32,11 +32,6 @@ jobs:
 
       - name: Set up Heroku CLI
         run: curl https://cli-assets.heroku.com/install.sh | sh
-
-      - name: Install Docker Compose
-        run: |
-          sudo apt-get update
-          sudo apt-get install docker-compose -y
 
       - name: Log in to Heroku
         env:
