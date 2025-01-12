@@ -1,23 +1,26 @@
 # Use Node 18 image as the base
 FROM node:18
 
-# Set the working directory to /usr/src/app (this will be the root working directory for the container)
+# Set the working directory to /usr/src/app
 WORKDIR /usr/src/app
 
-# Copy the package.json and package-lock.json from the backend folder into /usr/src/app
-COPY backend/package*.json ./
+# Copy package.json and package-lock.json from the backend folder to the container
+COPY package*.json ./
 
 # Install dependencies
 RUN npm install
 
-# Now copy everything from the backend folder into /usr/src/app
-COPY backend/ ./
+# Copy the rest of the backend folder into the container
+COPY . .
 
-# List the files to confirm tsconfig.json and others are present
+# Copy tsconfig.json separately to ensure it is copied correctly 
+COPY tsconfig.json .
+
+# List files to ensure tsconfig.json is copied correctly
 RUN ls -la /usr/src/app
 
 # Build the project
 RUN npm run build
 
-# Start the app in production mode
+# Start the app
 CMD ["npm", "run", "start:prod"]
