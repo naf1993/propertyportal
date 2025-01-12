@@ -13,11 +13,11 @@ RUN npm install
 # Copy the rest of the backend folder into the container
 COPY . .
 
-# Copy tsconfig.json separately to ensure it is copied correctly 
-COPY tsconfig.json .
-
 # List files to ensure tsconfig.json is copied correctly
 RUN ls -la /usr/src/app
+
+# Verify tsconfig.json is present
+RUN test -f /usr/src/app/tsconfig.json && echo "tsconfig.json exists" || echo "tsconfig.json not found"
 
 # Build the project
 RUN npm run build
