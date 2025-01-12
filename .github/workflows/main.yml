@@ -43,7 +43,7 @@ jobs:
       - name: Login to Heroku
         run: echo ${{ secrets.HEROKU_API_KEY }} | heroku auth:token
 
-      # Build and push the Docker image using Docker Compose
+      # Build and push Docker image using Docker Compose
       - name: Build and push Docker image
         run: |
           docker-compose -f docker-compose.yml build backend  # Build the backend service

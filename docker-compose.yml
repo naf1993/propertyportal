@@ -1,9 +1,9 @@
 version: '3'
 services:
   backend:
-    build: ./backend
+    build:
+      context: ./backend
     ports:
-      - "5000:5000"  # Expose port 5000 instead of 3000
+      - "5000:5000"
     environment:
       - NODE_ENV=production
-    # Additional environment variables, volumes, or commands as needed

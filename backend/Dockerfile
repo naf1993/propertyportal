@@ -1,19 +1,20 @@
-# Use an official Node.js runtime as a parent image (or another base image as required)
-FROM node:14-alpine
+# Use a Node.js base image
+FROM node:16-slim
 
-# Set the working directory in the container
-WORKDIR /app
+# Set the working directory
+WORKDIR /usr/src/app
 
-# Copy the backend's package.json and install dependencies
-COPY backend/package.json backend/yarn.lock ./
+# Copy package.json and package-lock.json
+COPY package*.json ./
 
-RUN yarn install
+# Install dependencies
+RUN npm install
 
-# Copy the rest of the backend app files
-COPY backend/ .
+# Copy the rest of the backend code
+COPY . .
 
-# Expose the backend API port (usually 5000, change if needed)
+# Expose the port the app runs on
 EXPOSE 5000
 
-# Command to run the backend server
-CMD ["yarn", "start"]
+# Define the command to run the app
+CMD ["npm", "run", "start"]
