@@ -7,14 +7,14 @@ WORKDIR /usr/src/app
 # Copy package.json and package-lock.json from the backend folder to the container
 COPY package*.json ./
 
+# List files after copying the package files
+RUN ls -la /usr/src/app
+
 # Install dependencies
 RUN npm install
 
 # Copy the rest of the backend folder into the container
 COPY . .
-
-# List files to ensure tsconfig.json is copied correctly
-RUN ls -la /usr/src/app
 
 # Build the project
 RUN npm run build
