@@ -1,6 +1,6 @@
-// app/properties/[id]/page.tsx
 import { notFound } from 'next/navigation';
 import { API_URL } from '@/app/apiUrl';
+import ButtonBack from '@/app/components/ButtonBack'; // Import GoBackLink
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   try {
@@ -45,12 +45,8 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
     return (
       <div className="max-w-7xl mx-auto py-12 px-6">
         <div className="flex justify-between items-center mb-6">
-          <button
-            onClick={() => window.history.back()}
-            className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-          >
-            Go Back
-          </button>
+          {/* Use the GoBackLink component */}
+          <ButtonBack/>
         </div>
 
         <div className="flex flex-col lg:flex-row items-center gap-8">

@@ -1,4 +1,4 @@
-import React from "react";
+'use client'
 
 // Define the type for pagination props
 export interface PaginationProps {
@@ -12,6 +12,7 @@ const Pagination: React.FC<PaginationProps> = ({
   totalPages,
   onPageChange,
 }) => {
+  console.log('current page pagination component',currentPage)
   const handlePrevPage = () => {
     if (currentPage > 1) {
       onPageChange(currentPage - 1); // Go to the previous page
@@ -24,9 +25,6 @@ const Pagination: React.FC<PaginationProps> = ({
     }
   };
 
-  const handlePageClick = (page: number) => {
-    onPageChange(page); // Go to the clicked page
-  };
 
   return (
     <div className="flex items-center justify-center space-x-4">

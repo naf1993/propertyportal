@@ -5,7 +5,7 @@ import { PropertyModule } from './property/property.module';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserModule } from './user/user.module';
-import { join } from 'path';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -19,6 +19,7 @@ import { join } from 'path';
     })()),
     PropertyModule,
     UserModule,
+    AuthModule
   ],
   controllers: [AppController],
   providers: [AppService],

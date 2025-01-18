@@ -13,7 +13,7 @@ const PropertyCard: FC<{ property: Property }> = ({ property }) => {
     <div className="relative bg-white shadow-lg rounded-lg overflow-hidden hover:shadow-2xl transition duration-300 ease-in-out transform hover:scale-105">
       {/* Eye Icon for Viewing Property */}
       <Link
-        href={`/property/${property._id}`}
+        href={`/properties/${property._id}`}
         className="absolute top-3 right-3"
       >
         <div className="flex justify-center items-center w-7 h-7 rounded-full bg-primary-900 text-white hover:bg-primary-700 transition duration-300">

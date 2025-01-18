@@ -1,15 +1,16 @@
-// src/cloudinary/cloudinary.service.ts
 import { Injectable } from '@nestjs/common';
 import * as cloudinary from 'cloudinary';
-import sharp from 'sharp';
+import * as sharp from 'sharp';  // Adjusted import to use CommonJS style
 import * as streamifier from 'streamifier';
 import { Readable } from 'stream';
+
 interface CloudinaryImageMetadata {
   secure_url: string;
   public_id: string;
   url: string;
   // Any other fields you need from the metadata
 }
+
 @Injectable()
 export class CloudinaryService {
   constructor() {

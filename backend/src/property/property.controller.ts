@@ -11,14 +11,18 @@ import {
   UseInterceptors,
   Req,
   Patch,
+  UseGuards,
 } from '@nestjs/common';
 import { PropertyService } from './property.service';
+import { RolesGuard } from 'src/auth/guards/roles.guards';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CreatePropertyDto, UpdatePropertyDto } from './property.dto';
 import { Property } from './property.schema';
 import { Request } from 'express';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import sharp from 'sharp';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+
 
 @Controller('properties')
 export class PropertyController {
@@ -28,6 +32,7 @@ export class PropertyController {
   ) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard,new RolesGuard(['admin', 'agent']))
   @UseInterceptors(FileInterceptor('image'))
   async create(
     @Body() propertyDto: CreatePropertyDto,
@@ -36,6 +41,7 @@ export class PropertyController {
   ) {
     console.log('Request Body:', req.body);
     console.log('Uploaded File:', req.file);
+    const user = req.user
 
     if (file) {
       try {
@@ -55,18 +61,19 @@ export class PropertyController {
       }
     }
 
-    return await this.propertyService.create(propertyDto);
+    return await this.propertyService.create(propertyDto,user);
   }
 
   @Get()
   async getProperties(
     @Query('page') page?: number,
     @Query('limit') limit?: number,
+    @Query() filters?:any
   ) {
-    if (page === undefined || limit === undefined) {
+    if (page === undefined || limit === undefined || filters === undefined) {
       return await this.propertyService.getAllProperties();
     }
-    return await this.propertyService.getProperties(page, limit);
+    return await this.propertyService.getProperties(page, limit,filters);
   }
 
   @Get(':id')
@@ -74,19 +81,21 @@ export class PropertyController {
     return this.propertyService.getPropertyById(id);
   }
 
-  @Patch(':id') @UseInterceptors(FileInterceptor('image')) async updateProperty(
+  @Patch(':id') @UseGuards(JwtAuthGuard,new RolesGuard(['admin', 'agent'])) @UseInterceptors(FileInterceptor('image')) async updateProperty(
     @Param('id') id: string,
     @Body() updatePropertyDto: UpdatePropertyDto,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: Express.Multer.File,@Req() req:Request
   ): Promise<Property> {
+  const user = req.user
     if (file) {
       console.log('file present');
     }
-    return this.propertyService.updateProperty(id, updatePropertyDto);
+    return this.propertyService.updateProperty(id, updatePropertyDto,user);
   }
 
-  @Delete(':id')
-  async deleteProperty(@Param('id') id: string): Promise<void> {
-    return await this.propertyService.deleteProperty(id);
+  @Delete(':id')@UseGuards(JwtAuthGuard,new RolesGuard(['admin', 'agent']))
+  async deleteProperty(@Param('id') id: string,@Req() req:Request): Promise<void> {
+    const user = req.user
+    return await this.propertyService.deleteProperty(id,user);
   }
 }

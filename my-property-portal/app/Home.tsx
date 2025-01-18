@@ -44,9 +44,7 @@ interface HomeProps {
   }
 
   const Home = ({ properties, totalProperties, page, totalPages }: HomeProps)=>{
-   console.log('total properties',totalProperties)
-   console.log('total pages',totalPages)
-   console.log('page',page)
+
     const [searchQuery, setSearchQuery] = useState("");
     const [loading, setLoading] = useState(false);
     const [locations, setLocations] = useState<Location[]>([]); 
@@ -111,6 +109,11 @@ interface HomeProps {
   const handleLocationSelect = (selectedOption: any) => {
     setSelectedLocation(selectedOption);
   };
+  useEffect(()=>{
+    if(selectedLocation){
+      console.log('this is selected location',selectedLocation)
+    }
+  },[selectedLocation])
   const handleSearch = () => {
     let filtered = [...propertiesList];
 
@@ -118,16 +121,22 @@ interface HomeProps {
     if (selectedLocation) {
       filtered = filtered.filter((property) => {
         const propertyCoordinates = property.coordinates.coordinates; // [longitude, latitude]
+        
         const [propertyLng, propertyLat] = propertyCoordinates;
-
+        let lat = propertyLng
+        let lng = propertyLat
         const [selectedLng, selectedLat] = selectedLocation.value;
+        console.log('this is lat',lat)
+        console.log('this is lng',lng)
 
         // Calculate distance using Haversine formula
-        const distance = getDistanceInKm(selectedLat, selectedLng, propertyLng, propertyLat);
+        const distance = getDistanceInKm(selectedLat, selectedLng, lng,lat);
 
         // Filter properties within 50 km radius
         return distance <= 50;
       });
+      console.log('this is filteres by location',filtered)
+      console.log('this is filterd length',filtered.length)
     }
 
     // Filter by Property Type

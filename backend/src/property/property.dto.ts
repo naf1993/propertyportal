@@ -4,6 +4,8 @@ export class CreatePropertyDto {
   price!: number;
   currency!: string;
   propertyType!: string;
+  owner!:string;
+  listingAgent!: string;
   address!: string;
   city!: string;
   image?: string;

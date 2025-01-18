@@ -4,19 +4,13 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import path from 'path';
 import * as express from 'express';
 import * as dotenv from 'dotenv';
+import { PropertyService } from './property/property.service';
 
-
-async function bootstrap() {
-  
+async function bootstrap() { 
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // Serve static assets from the 'public/uploads' directory
-  // const uploadFolderPath = path.join(process.cwd(), 'public', 'uploads');
-  // app.use('/uploads', express.static(uploadFolderPath));
-
   app.setGlobalPrefix('api');
-
   // Enable CORS
   app.enableCors({
     origin: process.env.CORS_ORIGIN,
@@ -24,6 +18,9 @@ async function bootstrap() {
     allowedHeaders: ["Content-Type", "Authorization", "sessionId"],
     credentials: true,
   });
+
+  // const propservice = app.get(PropertyService)
+  // await propservice.createProperties()
 
   await app.listen(process.env.PORT || 5000);
 }

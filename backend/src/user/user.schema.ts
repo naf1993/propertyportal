@@ -1,11 +1,18 @@
-import { Schema, Document } from 'mongoose';
-import mongoose from 'mongoose';
+import { Schema, Document, model } from 'mongoose';
+
+export enum UserRole {
+  ADMIN = 'admin',
+  AGENT = 'agent',
+  SELLER = 'seller',
+  BUYER = 'buyer',
+}
 
 export interface User extends Document {
   name: string;
   email: string;
   password: string;
   phoneNumber?: string;
+  googleId?: string; // Google OAuth ID
   profilePicture?: string;
   address?: string;
   city?: string;
@@ -35,17 +42,24 @@ export interface User extends Document {
   referralCode?: string;
 }
 
+// Define a Mongoose schema for the User model
 export const UserSchema = new Schema<User>({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   phoneNumber: { type: String },
+  googleId: { type: String, unique: false },
   profilePicture: { type: String },
   address: { type: String },
   city: { type: String },
   state: { type: String },
   country: { type: String },
-  role: { type: String, enum: ['admin', 'agent', 'owner', 'tenant'], required: true },
+  role: { 
+    type: String, 
+    enum: ['admin', 'agent', 'tenant'], 
+    required: true, 
+    default: 'tenant'  // Default role set to 'tenant'
+  },
   isVerified: { type: Boolean, default: false },
   isActive: { type: Boolean, default: true },
   isBanned: { type: Boolean, default: false },
@@ -69,4 +83,5 @@ export const UserSchema = new Schema<User>({
   referralCode: { type: String },
 });
 
-export const UserModel = mongoose.model<User>('User', UserSchema);
+// Create a Mongoose model for the User
+export const UserModel = model<User>('User', UserSchema);

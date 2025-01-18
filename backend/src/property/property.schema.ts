@@ -28,6 +28,7 @@ export const PropertySchema = new Schema(
   },
   { timestamps: true } // Enable timestamps (createdAt, updatedAt)
 );
+PropertySchema.index({ coordinates: '2dsphere' });
 
 export interface Property extends Document {
   title: string;

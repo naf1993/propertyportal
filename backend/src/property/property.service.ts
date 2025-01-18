@@ -6,25 +6,33 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Property } from './property.schema';
-import * as fs from 'fs';
-import * as path from 'path';
-import { randomInt } from 'crypto';
-// import { properties } from '../../data'
 import { CreatePropertyDto, UpdatePropertyDto } from './property.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import Redis from 'ioredis';
 
 @Injectable()
 export class PropertyService {
+  private redis: Redis;
+
   constructor(
     @InjectModel('Property') private propertyModel: Model<Property>,
     private readonly cloudinaryService: CloudinaryService,
-  ) {}
+  ) {
+    // Initialize Redis client
+    this.redis = new Redis({
+      host: '127.0.0.1', // Make sure this matches your Redis configuration
+      port: 6379, // Default Redis port
+      db: 0,
+    });
+  }
+
+  // Generate cache key for properties based on pagination and filters
+  private generateCacheKey(page: number, limit: number, filters: any): string {
+    const filterString = JSON.stringify(filters);
+    return `properties:${page}:${limit}:${filterString}`;
+  }
 
   // async createProperties() {
-  //   // Clear the existing properties before insertion
-  //   await this.propertyModel.deleteMany({});
-  //   console.log('Cleared existing properties from the database.');
-
   //   const imageFolderPath = path.join(process.cwd(), 'images');
   //   console.log('Images folder path:', imageFolderPath);
 
@@ -69,11 +77,25 @@ export class PropertyService {
   //   return result;
   // }
 
-  async create(propertyDto: CreatePropertyDto) {
-    const createdProperty = new this.propertyModel(propertyDto);
-    return await createdProperty.save(); // Save to MongoDB
+  // Create a property
+  async create(propertyDto: CreatePropertyDto,user:any) {
+
+    if (user.role !== 'admin' && user.role !== 'agent') {
+      throw new BadRequestException('You do not have permission to create a property.');
+    }
+    const createdProperty = new this.propertyModel({
+      ...propertyDto,
+      listingAgent: user._id, // Associate the logged-in user as the owner
+    });
+    const savedProperty = await createdProperty.save();
+
+    // Invalidate cache after creating a property
+    await this.invalidateCacheForProperties();
+
+    return savedProperty;
   }
 
+  // Get all properties (no filters)
   async getAllProperties() {
     const properties = await this.propertyModel
       .find()
@@ -88,32 +110,91 @@ export class PropertyService {
     };
   }
 
-  async getProperties(page: number, limit: number) {
-    // Ensure page number is within bounds
-    const validPage = page < 1 ? 1 : page;
-    const skip = (validPage - 1) * limit;
+  // Get properties with filters, pagination, and caching
+  async getProperties(page: number, limit: number, filters: any) {
+    console.log(filters);
+    const cacheKey = this.generateCacheKey(page, limit, filters);
 
-    const totalProperties = await this.propertyModel.countDocuments();
+    // Check if cached data exists
+    const cachedData = await this.redis.get(cacheKey);
+    if (cachedData) {
+      console.log('Cache hit for:', cacheKey);
+      return JSON.parse(cachedData); // Return cached data if available
+    }
+
+    console.log('Cache miss for:', cacheKey);
+
+    // Build query object based on filters
+    const query: any = {};
+
+    if (filters.propertyType) {
+      query.propertyType = { $regex: new RegExp(filters.propertyType, 'i') };
+    }
+    if (filters.minPrice) {
+      query.price = { $gte: Number(filters.minPrice) };
+    }
+    if (filters.maxPrice) {
+      query.price = query.price || {}; // Allow both min and max price filters together
+      query.price.$lte = Number(filters.maxPrice);
+    }
+    if (filters.city) {
+      query.city = { $regex: new RegExp(filters.city, 'i') }; // Case insensitive search
+    }
+
+    if (filters.bedrooms) {
+      query.bedrooms = { $lte: Number(filters.bedrooms) };
+      console.log(typeof query.bedrooms);
+    }
+
+    if (filters.latitude && filters.longitude) {
+      const lat = parseFloat(filters.latitude);
+      const lng = parseFloat(filters.longitude);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        const radiusInKm = 20;
+        const radiusInRadians = radiusInKm / 6371;
+        query.coordinates = {
+          $geoWithin: {
+            $centerSphere: [[lat, lng], radiusInRadians],
+          },
+        };
+      } else {
+        console.error('Invalid locations');
+        throw new BadRequestException('Invalid location');
+      }
+    }
+    console.log('this is query', query);
+    // Count total number of properties that match the filters
+    const totalProperties = await this.propertyModel.countDocuments(query);
     const totalPages = Math.ceil(totalProperties / limit);
 
     // Ensure requested page doesn't exceed total pages
-    const finalPage = validPage > totalPages ? totalPages : validPage;
+    const validPage = page < 1 ? 1 : page;
+    const skip = (validPage - 1) * limit;
 
+    // Retrieve the filtered and paginated properties
+    console.log('this is query', query);
     const properties = await this.propertyModel
-      .find()
+      .find(query)
       .sort({ createdAt: -1 })
-      .skip((finalPage - 1) * limit)
+      .skip(skip)
       .limit(limit)
       .exec();
 
-    return {
+    const result = {
       properties,
       totalProperties,
-      page: finalPage, // Return the correct page
+      page: validPage,
       totalPages,
     };
+    console.log('this is result properites length', totalProperties);
+
+    // Cache the result
+    await this.redis.set(cacheKey, JSON.stringify(result), 'EX', 60);
+
+    return result;
   }
 
+  // Get a single property by ID
   async getPropertyById(id: string): Promise<Property> {
     const property = await this.propertyModel.findById(id).exec();
     if (!property) {
@@ -122,18 +203,25 @@ export class PropertyService {
     return property;
   }
 
+  // Update a property
   async updateProperty(
     id: string,
-    updateData: UpdatePropertyDto,
+    updateData: UpdatePropertyDto,user:any
   ): Promise<Property> {
-    const property = await this.propertyModel.findById(id);
+    const property = await this.propertyModel.findById(id).populate('listingAgent').exec();
     if (!property) {
       throw new NotFoundException('Property not found');
     }
-    console.log('recieved updated data', updateData);
+    // if (user.role !== 'admin' && property.listingAgent.toString() !== user._id.toString()) {
+    //   throw new BadRequestException('You do not have permission to update this property.');
+    // }
+
+    console.log('Received update data:', updateData);
+
     if (Object.keys(updateData).length === 0) {
-      throw new BadRequestException('No Fields present');
+      throw new BadRequestException('No fields to update');
     }
+
     if (updateData.coordinates && typeof updateData.coordinates === 'string') {
       try {
         const parsedCoordinates = JSON.parse(updateData.coordinates);
@@ -146,38 +234,61 @@ export class PropertyService {
         throw new BadRequestException('Invalid coordinates format');
       }
     }
+
     Object.assign(property, updateData);
-    console.log('updated property', property);
     await property.save();
+
+    // Invalidate cache after updating a property
+    await this.invalidateCacheForProperties();
+
     return property;
   }
 
-  async deleteProperty(id: string): Promise<void> {
-    const property = await this.propertyModel.findById(id);
+  // Delete a property
+  async deleteProperty(id: string, user: any): Promise<void> {
+    const property = await this.propertyModel.findById(id).populate('listingAgent').exec();
     if (!property) {
       throw new NotFoundException('Property not found');
     }
-  
-    // Check if the image exists and get the publicId
-    const imageUrl = property?.image;
-    if (!imageUrl) {
-      console.log('No image found for the property.');
-      return; // No image to delete
-    }
-  
-    const publicId = imageUrl.split('/').pop()?.split('.')[0]; // This will return `undefined` if imageUrl is not valid
-    if (publicId) {
-      await this.cloudinaryService.deleteImage(publicId);
-      console.log('Deleted image from Cloudinary:', publicId);
-    } else {
-      console.error('Invalid image URL format, publicId could not be extracted');
-    }
-  
-    // Now delete the property
-    await this.propertyModel.findByIdAndDelete(id);
-    console.log('Deleted property from database:', property);
-  }
-  
-}
 
-// Create a property
+    // if (user.role !== 'admin' && property.listingAgent.toString() !== user._id.toString()) {
+    //   throw new BadRequestException('You do not have permission to update this property.');
+    // }
+
+    // Delete image from Cloudinary (if any)
+    const imageUrl = property?.image;
+    if (imageUrl) {
+      const publicId = imageUrl.split('/').pop()?.split('.')[0];
+      if (publicId) {
+        await this.cloudinaryService.deleteImage(publicId);
+      }
+    }
+
+    // Delete the property from the database
+    await this.propertyModel.findByIdAndDelete(id);
+
+    // Invalidate cache after deleting a property
+    await this.invalidateCacheForProperties();
+  }
+
+
+  // Invalidate cache for all properties
+  private async invalidateCacheForProperties() {
+    const keys = await this.redis.keys('properties:*');
+    if (keys.length > 0) {
+      await this.redis.del(...keys);
+      console.log('Invalidated all property cache keys');
+    }
+  }
+
+  // Invalidate cache for a specific filter combination (more granular invalidation)
+  private async invalidateCacheForFilters(filters: any) {
+    const cacheKey = this.generateCacheKey(
+      filters.page,
+      filters.limit,
+      filters,
+    );
+    await this.redis.del(cacheKey); // Delete cache for this specific filter
+    console.log(`Invalidated cache for key: ${cacheKey}`);
+  }
+}
