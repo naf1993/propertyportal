@@ -1,40 +1,53 @@
 // app/register/page.tsx
 "use client"; // This makes it a client-side component
 
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FaGoogle } from "react-icons/fa";
 import Link from "next/link";
+import { registerUser } from "../slices/authSlice";
+import { AppDispatch } from '../store';
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "../store"; // Import RootState type
 
 const RegisterPage = () => {
+  const dispatch = useDispatch<AppDispatch>(); 
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isAgent, setIsAgent] = useState(false);
+  const user = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, user: authenticatedUser, loading } = user;
+
+  useEffect(() => {
+    // Only redirect if not loading and user is authenticated
+    if (!loading && isAuthenticated) {
+      router.push("/"); // Redirect to home if already authenticated
+    }
+  }, [isAuthenticated, loading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password,role: isAgent ? "agent" : "tenant" }),
-      });
-
-      const data = await res.json();
-
-      if (res.status !== 201) {
-        setError(data.message);
-      } else {
-        router.push("/login");
-      }
-    } catch (error) {
-      setError("An error occurred");
-    }
-  };
+     e.preventDefault();
+     
+     try {
+       // Dispatch the login action
+       const result = await dispatch(registerUser({ email, password,name,role:isAgent ? 'agent' : 'tenant' })).unwrap();
+ 
+       // If successful, you can perform any additional logic
+       console.log('Registration successful', result);
+       router.push('/')
+ 
+     } catch (error: any) {  // TypeScript can now infer that `error` is `any`
+       // If error, set the error message
+       if (error && error.message) {
+         setError(error.message);  // Assuming `error` has a `message` property
+       } else {
+         setError('Login failed');  // Fallback error message
+       }
+     }
+   };
 
   return (
     <div className="max-w-sm mx-auto flex flex-col items-center mt-10">
@@ -70,7 +83,7 @@ const RegisterPage = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-         <div className="flex items-center">
+         {/* <div className="flex items-center">
           <input
             type="checkbox"
             id="isAgent"
@@ -81,14 +94,14 @@ const RegisterPage = () => {
           <label htmlFor="isAgent" className="text-sm text-gray-700">
             I am an agent
           </label>
-        </div>
+        </div> */}
 
         {/* Submit button */}
         <button
           type="submit"
           className="w-full p-3 bg-primary-900 text-white rounded-md transition-all duration-300 hover:bg-primary-700 focus:outline-none"
         >
-          Login
+          Register
         </button>
       </form>
 

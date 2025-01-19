@@ -1,15 +1,7 @@
+// cloudinary.service.ts
 import { Injectable } from '@nestjs/common';
 import * as cloudinary from 'cloudinary';
-import * as sharp from 'sharp';  // Adjusted import to use CommonJS style
 import * as streamifier from 'streamifier';
-import { Readable } from 'stream';
-
-interface CloudinaryImageMetadata {
-  secure_url: string;
-  public_id: string;
-  url: string;
-  // Any other fields you need from the metadata
-}
 
 @Injectable()
 export class CloudinaryService {
@@ -22,29 +14,31 @@ export class CloudinaryService {
   }
 
   async uploadImage(imageBuffer: Buffer, fileName: string): Promise<any> {
-    // Compress and resize the image using Sharp
-    const compressedImage = await sharp(imageBuffer)
-      .resize(800, 600) // Optional: Resize the image before uploading (adjust as needed)
-      .toBuffer();
+    try {
+      // Upload the image to Cloudinary
+      return new Promise((resolve, reject) => {
+        const stream = cloudinary.v2.uploader.upload_stream(
+          {
+            public_id: fileName,
+            folder: 'properties', // Folder in Cloudinary (optional)
+          },
+          (error, result) => {
+            if (error) {
+              console.error('Error uploading image to Cloudinary:', error);
+              return reject(error);
+            }
+            console.log('Image uploaded to Cloudinary:', result);
+            resolve(result);
+          },
+        );
 
-    // Upload the image to Cloudinary
-    return new Promise((resolve, reject) => {
-      const stream = cloudinary.v2.uploader.upload_stream(
-        {
-          public_id: fileName,
-          folder: 'properties', // Folder in Cloudinary (optional)
-        },
-        (error, result) => {
-          if (error) {
-            return reject(error);
-          }
-          resolve(result);
-        },
-      );
-
-      // Convert buffer to stream and pipe to Cloudinary
-      streamifier.createReadStream(compressedImage).pipe(stream);
-    });
+        // Convert buffer to stream and pipe to Cloudinary
+        streamifier.createReadStream(imageBuffer).pipe(stream);
+      });
+    } catch (error) {
+      console.error('Error processing and uploading image:', error);
+      throw new Error('Error processing and uploading the image.');
+    }
   }
 
   async deleteImage(publicId: string): Promise<any> {

@@ -1,22 +1,30 @@
-// app/login/page.tsx
 "use client"; // This makes it a client-side component
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FaGoogle } from "react-icons/fa";
-import { useDispatch } from 'react-redux';
 import { loginUser } from '../slices/authSlice';  // Import your login action
 import GoogleLoginBtn from './GoogleLogin';  // Import Google login button
 import { AppDispatch } from '../store';
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "../store"; // Import RootState type
 
 import Link from "next/link";
 
 const LoginPage = () => {
-    const dispatch = useDispatch<AppDispatch>(); 
+  const dispatch = useDispatch<AppDispatch>(); 
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const user = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, user: authenticatedUser, loading } = user;
+
+  useEffect(() => {
+    // Only redirect if not loading and user is authenticated
+    if (!loading && isAuthenticated) {
+      router.push("/"); // Redirect to home if already authenticated
+    }
+  }, [isAuthenticated, loading, router]); // Triggered when isAuthenticated or loading changes
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,6 +35,7 @@ const LoginPage = () => {
 
       // If successful, you can perform any additional logic
       console.log('Login successful', result);
+      router.push('/')
 
     } catch (error: any) {  // TypeScript can now infer that `error` is `any`
       // If error, set the error message
@@ -76,14 +85,12 @@ const LoginPage = () => {
       </form>
 
       {/* Google Login Button */}
-      <div className="mt-6 w-full">
-         <GoogleLoginBtn /> 
-      </div>
+      {/* <div className="mt-6 w-full">
+        <GoogleLoginBtn /> 
+      </div> */}
 
       <div className="mt-6 w-full flex items-center justify-center">
         <p className="text-sm font-light text-gray-700">Don't have an account <Link href={'/register'}><span className="text-md font-light text-primary-900">Register</span></Link></p>
-    
-       
       </div>
     </div>
   );

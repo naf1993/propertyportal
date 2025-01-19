@@ -5,6 +5,10 @@ import { Property } from "../types";
 import Modal from "../components/Modal";
 import { AiOutlineDelete, AiOutlineEdit, AiOutlineHome } from "react-icons/ai";
 import toast from "react-hot-toast";
+import { API_URL } from "../apiUrl";
+import { useRouter } from "next/navigation";
+import axiosInstance from "../lib/axios";
+import Pagination from "../components/Pagination";
 
 interface HomeProps {
   properties: Property[];
@@ -13,8 +17,10 @@ interface HomeProps {
   totalPages: number;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
+
 const Home = ({ properties, totalProperties, page, totalPages }: HomeProps) => {
+  
+  const router = useRouter()
   const markerPosition: [number, number] = [
     24.441832545639404, 54.422103264882296,
   ]; // Example coordinates
@@ -23,29 +29,27 @@ const Home = ({ properties, totalProperties, page, totalPages }: HomeProps) => {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(
     null
   );
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [propertiesList, setPropertiesList] = useState(properties);
+  const [currentPage, setCurrentPage] = useState<number>(page);
+  const [propertiesList, setPropertiesList] = useState<Property[]>(properties);
 
-  const fetchProperties = async (page: number) => {
+  const fetchProperties = async (page: number,limit:number) => {
     try {
       const response = await axios.get(`${API_URL}/api/properties`, {
-        params: { page, limit: 6 }, // Assume 6 properties per page
+        params: { page, limit }, // Assume 6 properties per page
       });
       setPropertiesList(response.data.properties);
     } catch (error) {
       console.error("Error fetching properties:", error);
     }
   };
-  useEffect(() => {
-    fetchProperties(currentPage); // Fetch properties when page changes
-  }, [currentPage]);
+
 
   const handlePageChange = (newPage: number) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setCurrentPage(newPage);
-    }
+    setCurrentPage(newPage); // Update the client-side currentPage state
   };
-
+useEffect(()=>{
+fetchProperties(currentPage,6)
+},[currentPage])
   // Open modal for creating a new property
   const handleCreate = () => {
     console.log("create mode");
@@ -92,14 +96,14 @@ const Home = ({ properties, totalProperties, page, totalPages }: HomeProps) => {
         const id = formData.get("_id");
         console.log(id);
         // Edit existing property
-        await axios.patch(
+        await axiosInstance.patch(
           `${API_URL}/api/properties/${id}`,
           formData
         );
         toast.success("Property Edited");
       } else {
         // Create a new property
-        await axios.post(
+        await axiosInstance.post(
           `${API_URL}/api/properties`,
           formData,
           config
@@ -107,7 +111,7 @@ const Home = ({ properties, totalProperties, page, totalPages }: HomeProps) => {
         toast.success("New Property Added");
       }
       // Fetch the latest properties after saving
-      fetchProperties(currentPage);
+      fetchProperties(currentPage,6);
       setIsModalOpen(false);
     } catch (error) {
       toast.error("Error saving property");
@@ -118,20 +122,28 @@ const Home = ({ properties, totalProperties, page, totalPages }: HomeProps) => {
   const handleDeleteProperty = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this property?")) {
       try {
-        await axios.delete(`${API_URL}/api/properties/${id}`);
+        await axiosInstance.delete(`${API_URL}/api/properties/${id}`);
         toast.success("Property Deleted");
         // Call the parent's delete handler to refresh the list
-        fetchProperties(currentPage);
+        fetchProperties(currentPage,6);
       } catch (error) {
         toast.error("Error deleting property");
         console.error("Error deleting property", error);
       }
     }
   };
-
+  const handleGoBack = () => {
+    router.replace("/"); // Replace current page with home page or a fallback route
+  };
   return (
     <>
       <div>
+      <button
+      onClick={handleGoBack}
+      className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+    >
+      Go Back
+    </button>
         {/* Heading Section */}
         <h1 className="text-3xl text-gray-600 tracking-wide font-light mb-6">
           Manage Properties
@@ -209,27 +221,11 @@ const Home = ({ properties, totalProperties, page, totalPages }: HomeProps) => {
         </div>
 
         <div className="flex justify-center mt-8">
-          <button
-            onClick={() =>
-              handlePageChange(Number(Number(currentPage) - Number(1)))
-            }
-            disabled={currentPage === 1}
-            className="bg-blue-100 text-white px-2 py-2 text-sm rounded-md disabled:opacity-50 hover:bg-blue-600 transition duration-300"
-          >
-            Prev
-          </button>
-          <span className="mx-4 text-sm">
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            onClick={() =>
-              handlePageChange(Number(Number(currentPage) + Number(1)))
-            }
-            disabled={currentPage === totalPages}
-            className="bg-blue-100 text-white text-sm px-2 py-2 rounded-md disabled:opacity-50 hover:bg-blue-600 transition duration-300"
-          >
-            Next
-          </button>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         </div>
       </div>
       {isModalOpen && (

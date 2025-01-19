@@ -4,6 +4,7 @@ import Filter from './components/FilterComponent';
 import Locations from './components/Locations';
 import { API_URL } from './apiUrl';
 import { Property } from './types';
+import Featured from './components/Featured';
 interface PageProps {
   properties: Property[];
 }
@@ -15,6 +16,7 @@ const Page = async () => {
     <>
       <Filter />
       <Locations properties={data.properties} />
+      <Featured properties={data.properties}/>
     </>
   );
 };

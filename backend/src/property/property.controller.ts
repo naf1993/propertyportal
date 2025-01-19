@@ -11,7 +11,7 @@ import {
   UseInterceptors,
   Req,
   Patch,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 import { PropertyService } from './property.service';
 import { RolesGuard } from 'src/auth/guards/roles.guards';
@@ -19,10 +19,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { CreatePropertyDto, UpdatePropertyDto } from './property.dto';
 import { Property } from './property.schema';
 import { Request } from 'express';
+import { ParseObjectIdPipe } from '../common/parse-object-id.pipe'; // Adjust the import path as needed
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
-import sharp from 'sharp';
+import * as sharp from 'sharp';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-
 
 @Controller('properties')
 export class PropertyController {
@@ -32,7 +32,7 @@ export class PropertyController {
   ) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard,new RolesGuard(['admin', 'agent']))
+  @UseGuards(JwtAuthGuard, new RolesGuard(['admin', 'agent']))
   @UseInterceptors(FileInterceptor('image'))
   async create(
     @Body() propertyDto: CreatePropertyDto,
@@ -41,19 +41,22 @@ export class PropertyController {
   ) {
     console.log('Request Body:', req.body);
     console.log('Uploaded File:', req.file);
-    const user = req.user
+    const user = req.user;
 
     if (file) {
       try {
+        console.log('waiting to compress image')
         const compressedImage = await sharp(file.buffer)
           .resize(800)
           .toFormat('jpeg', { quality: 80 })
           .toBuffer();
+        console.log('compressed image',compressedImage)
 
         const uploadResult = await this.cloudinaryService.uploadImage(
           compressedImage,
           file.originalname,
         );
+        console.log('image uploaded')
         propertyDto.image = uploadResult.secure_url;
       } catch (error) {
         console.error('Error processing and uploading image:', error);
@@ -61,19 +64,19 @@ export class PropertyController {
       }
     }
 
-    return await this.propertyService.create(propertyDto,user);
+    return await this.propertyService.create(propertyDto, user);
   }
 
   @Get()
   async getProperties(
     @Query('page') page?: number,
     @Query('limit') limit?: number,
-    @Query() filters?:any
+    @Query() filters?: any,
   ) {
     if (page === undefined || limit === undefined || filters === undefined) {
       return await this.propertyService.getAllProperties();
     }
-    return await this.propertyService.getProperties(page, limit,filters);
+    return await this.propertyService.getProperties(page, limit, filters);
   }
 
   @Get(':id')
@@ -81,21 +84,34 @@ export class PropertyController {
     return this.propertyService.getPropertyById(id);
   }
 
-  @Patch(':id') @UseGuards(JwtAuthGuard,new RolesGuard(['admin', 'agent'])) @UseInterceptors(FileInterceptor('image')) async updateProperty(
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, new RolesGuard(['admin', 'agent']))
+  @UseInterceptors(FileInterceptor('image'))
+  async updateProperty(
     @Param('id') id: string,
     @Body() updatePropertyDto: UpdatePropertyDto,
-    @UploadedFile() file: Express.Multer.File,@Req() req:Request
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: Request,
   ): Promise<Property> {
-  const user = req.user
+    const user = req.user;
     if (file) {
       console.log('file present');
     }
-    return this.propertyService.updateProperty(id, updatePropertyDto,user);
+    return this.propertyService.updateProperty(id, updatePropertyDto, user);
   }
 
-  @Delete(':id')@UseGuards(JwtAuthGuard,new RolesGuard(['admin', 'agent']))
-  async deleteProperty(@Param('id') id: string,@Req() req:Request): Promise<void> {
-    const user = req.user
-    return await this.propertyService.deleteProperty(id,user);
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, new RolesGuard(['admin', 'agent']))
+  async deleteProperty(
+    @Param('id') id: string,
+    @Req() req: Request,
+  ): Promise<void> {
+    const user = req.user;
+    return await this.propertyService.deleteProperty(id, user);
+  }
+  @Get('agent/:agentId') async getPropertiesByAgent(
+    @Param('agentId', ParseObjectIdPipe) agentId: string,
+  ): Promise<Property[]> {
+    return this.propertyService.getPropertiesByAgent(agentId);
   }
 }

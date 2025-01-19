@@ -1,11 +1,16 @@
-// src/auth/strategy/google.strategy.ts
+// google.strategy.ts
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { AuthService } from '../auth.service';
 import { UnauthorizedException } from '@nestjs/common';
-import { ExtractJwt, Strategy } from 'passport-jwt';
-@Injectable()
+
+export interface GoogleProfile {
+  id: string; // Google ID
+  emails: { value: string }[]; // Array of emails (usually one primary email)
+  displayName: string; // Google user display name
+}
+
 @Injectable()
 export class GoogleOAuthStrategy extends PassportStrategy(GoogleStrategy, 'google') {
   constructor(private authService: AuthService) {
@@ -18,21 +23,19 @@ export class GoogleOAuthStrategy extends PassportStrategy(GoogleStrategy, 'googl
     });
   }
 
-  // The validate method is automatically called when the user logs in via Google
-  async validate(req: any, accessToken: string, refreshToken: string, profile: any, done: Function) {
+  async validate(req: any, accessToken: string, refreshToken: string, profile: GoogleProfile, done: Function) {
     try {
-      const { emails, id, displayName } = profile;
-      const email = emails[0].value;
+      const { id, emails, displayName } = profile;
+      const email = emails[0].value; // Usually, the first email is the primary email
 
-      // Call your authentication service to check or create the user
-      const user = await this.authService.validateGoogleUser(email, id);
+      // Pass the Google ID, email, and display name to your service
+      const user = await this.authService.validateGoogleUser(id, email, displayName);
 
       if (!user) {
         return done(new UnauthorizedException('User not found or unauthorized'), false);
       }
 
-      // If the user is found, pass the user object to the 'done' callback
-      return done(null, user);
+      return done(null, user); // Pass the user to the next step (auth controller)
     } catch (err) {
       return done(err, false);
     }

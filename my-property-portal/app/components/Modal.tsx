@@ -110,19 +110,26 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, onSave, property }) => {
         }
       );
       console.log(response.data);
+  
       setLocations(
-        response.data.features.map((loc: any) => ({
-          value: loc.id,
-          label: `${loc.text} in ${
-            loc.context.find((c: any) => c.id.includes("place")).text
-          }`,
-          center: loc.center,
-        }))
+        response.data.features.map((loc: any) => {
+          const placeContext = loc.context?.find((c: any) => c.id.includes("place"));
+          const label = placeContext
+            ? `${loc.text || 'Unknown location'} in ${placeContext.text || 'Unknown place'}`
+            : loc.text || 'Unknown location';
+          
+          return {
+            value: loc.id,
+            label,
+            center: loc.center,
+          };
+        })
       );
     } catch (error) {
       console.error("Error fetching locations:", error);
     }
   };
+  
 
   // Debounced function to handle search input change
   const debouncedGetLocations = useCallback(debounce(getLocations, 300), []);

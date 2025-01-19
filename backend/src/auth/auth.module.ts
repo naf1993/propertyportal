@@ -1,27 +1,26 @@
-// src/auth/auth.module.ts
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { GoogleOAuthStrategy } from './strategy/google.strategy'; // Import the correct strategy
-import { JwtAuthGuard } from './guards/jwt-auth.guard'; // Protect routes with JWT
-import { UserModule } from 'src/user/user.module'; // Import the UserModule
+import { JwtStrategy } from './strategy/jwt.strategy'; // Import the JwtStrategy
+import { JwtAuthGuard } from './guards/jwt-auth.guard'; // Import the guard
+import { UserModule } from 'src/user/user.module';
 
 @Module({
   imports: [
-    UserModule,          // Make sure UserModule is imported
-    PassportModule,      // Make sure Passport is imported for authentication
+    UserModule,
+    PassportModule.register({ defaultStrategy: 'jwt' }),  // Ensure defaultStrategy is set to 'jwt'
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'defaultSecretKey', // Secret key for signing JWT
+      secret: process.env.JWT_SECRET || 'yourjwtsecretkey', // Secret key for signing JWT
       signOptions: { expiresIn: '1h' },  // Optionally configure token expiration
     }),
   ],
   providers: [
-    AuthService,         // Authentication service that handles JWT logic
-    GoogleOAuthStrategy, // Google OAuth strategy
-    JwtAuthGuard,        // JWT Auth Guard to protect routes
+    AuthService,
+    JwtStrategy,  // Register the JwtStrategy
+    JwtAuthGuard,  // Register the JwtAuthGuard
   ],
-  controllers: [AuthController], // Controller to handle authentication routes
+  controllers: [AuthController],
 })
 export class AuthModule {}

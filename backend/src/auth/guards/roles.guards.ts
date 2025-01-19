@@ -8,9 +8,7 @@ export class RolesGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean | Observable<boolean> {
     const request = context.switchToHttp().getRequest();
-    const user = request.user; // The user object is attached by the JWT strategy
-
-    // Check if the user's role is allowed
+    const user = request.user; // The user object is attached by the JWT strategy    // Check if the user's role is allowed
     return this.allowedRoles.includes(user.role);
   }
 }

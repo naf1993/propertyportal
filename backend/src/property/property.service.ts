@@ -8,12 +8,13 @@ import { Model } from 'mongoose';
 import { Property } from './property.schema';
 import { CreatePropertyDto, UpdatePropertyDto } from './property.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
-
+import { User } from 'src/user/user.schema';
 
 @Injectable()
 export class PropertyService {
   constructor(
     @InjectModel('Property') private propertyModel: Model<Property>,
+    @InjectModel('User') private userModel: Model<User>,
     private readonly cloudinaryService: CloudinaryService,
   ) {
     // // Initialize Redis client
@@ -77,7 +78,7 @@ export class PropertyService {
 
   // Create a property
   async create(propertyDto: CreatePropertyDto, user: any) {
-    console.log('hello')
+    console.log('hello');
     if (user.role !== 'admin' && user.role !== 'agent') {
       throw new BadRequestException(
         'You do not have permission to create a property.',
@@ -238,8 +239,9 @@ export class PropertyService {
         throw new BadRequestException('Invalid coordinates format');
       }
     }
+    let updated = {...updateData,listingAgent: user._id}
 
-    Object.assign(property, updateData);
+    Object.assign(property, updated,);
     await property.save();
 
     // // Invalidate cache after updating a property
@@ -297,4 +299,12 @@ export class PropertyService {
   //   await this.redis.del(cacheKey); // Delete cache for this specific filter
   //   console.log(`Invalidated cache for key: ${cacheKey}`);
   // }
+
+  async getPropertiesByAgent(agentId: string): Promise<Property[]> {
+    const agent = await this.userModel.findById(agentId);
+    if (!agent || agent.role !== 'agent') {
+      throw new NotFoundException('Agent not found or not an agent');
+    }
+    return this.propertyModel.find({ listingAgent: agentId }).exec();
+  }
 }
