@@ -18,7 +18,7 @@ const fetchData = async (page: number, limit: number, filters: Record<string, st
 
     const totalProperties = Number(response.data.totalProperties);
     const totalPages = response.data.totalPages || Math.ceil(totalProperties / limit);
-
+console.log(response.data.properties)
     return {
       properties: response.data.properties,
       totalProperties: totalProperties || 0,
