@@ -8,29 +8,27 @@ import { Model } from 'mongoose';
 import { Property } from './property.schema';
 import { CreatePropertyDto, UpdatePropertyDto } from './property.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
-import Redis from 'ioredis';
+
 
 @Injectable()
 export class PropertyService {
-  private redis: Redis;
-
   constructor(
     @InjectModel('Property') private propertyModel: Model<Property>,
     private readonly cloudinaryService: CloudinaryService,
   ) {
-    // Initialize Redis client
-    this.redis = new Redis({
-      host: '127.0.0.1', // Make sure this matches your Redis configuration
-      port: 6379, // Default Redis port
-      db: 0,
-    });
+    // // Initialize Redis client
+    // this.redis = new Redis({
+    //   host: '127.0.0.1', // Make sure this matches your Redis configuration
+    //   port: 6379, // Default Redis port
+    //   db: 0,
+    // });
   }
 
-  // Generate cache key for properties based on pagination and filters
-  private generateCacheKey(page: number, limit: number, filters: any): string {
-    const filterString = JSON.stringify(filters);
-    return `properties:${page}:${limit}:${filterString}`;
-  }
+  // // Generate cache key for properties based on pagination and filters
+  // private generateCacheKey(page: number, limit: number, filters: any): string {
+  //   const filterString = JSON.stringify(filters);
+  //   return `properties:${page}:${limit}:${filterString}`;
+  // }
 
   // async createProperties() {
   //   const imageFolderPath = path.join(process.cwd(), 'images');
@@ -78,10 +76,12 @@ export class PropertyService {
   // }
 
   // Create a property
-  async create(propertyDto: CreatePropertyDto,user:any) {
-
+  async create(propertyDto: CreatePropertyDto, user: any) {
+    console.log('hello')
     if (user.role !== 'admin' && user.role !== 'agent') {
-      throw new BadRequestException('You do not have permission to create a property.');
+      throw new BadRequestException(
+        'You do not have permission to create a property.',
+      );
     }
     const createdProperty = new this.propertyModel({
       ...propertyDto,
@@ -90,7 +90,7 @@ export class PropertyService {
     const savedProperty = await createdProperty.save();
 
     // Invalidate cache after creating a property
-    await this.invalidateCacheForProperties();
+    // await this.invalidateCacheForProperties();
 
     return savedProperty;
   }
@@ -113,16 +113,16 @@ export class PropertyService {
   // Get properties with filters, pagination, and caching
   async getProperties(page: number, limit: number, filters: any) {
     console.log(filters);
-    const cacheKey = this.generateCacheKey(page, limit, filters);
+    // const cacheKey = this.generateCacheKey(page, limit, filters);
 
-    // Check if cached data exists
-    const cachedData = await this.redis.get(cacheKey);
-    if (cachedData) {
-      console.log('Cache hit for:', cacheKey);
-      return JSON.parse(cachedData); // Return cached data if available
-    }
+    // // Check if cached data exists
+    // const cachedData = await this.redis.get(cacheKey);
+    // if (cachedData) {
+    //   console.log('Cache hit for:', cacheKey);
+    //   return JSON.parse(cachedData); // Return cached data if available
+    // }
 
-    console.log('Cache miss for:', cacheKey);
+    // console.log('Cache miss for:', cacheKey);
 
     // Build query object based on filters
     const query: any = {};
@@ -189,7 +189,7 @@ export class PropertyService {
     console.log('this is result properites length', totalProperties);
 
     // Cache the result
-    await this.redis.set(cacheKey, JSON.stringify(result), 'EX', 60);
+    // await this.redis.set(cacheKey, JSON.stringify(result), 'EX', 60);
 
     return result;
   }
@@ -206,9 +206,13 @@ export class PropertyService {
   // Update a property
   async updateProperty(
     id: string,
-    updateData: UpdatePropertyDto,user:any
+    updateData: UpdatePropertyDto,
+    user: any,
   ): Promise<Property> {
-    const property = await this.propertyModel.findById(id).populate('listingAgent').exec();
+    const property = await this.propertyModel
+      .findById(id)
+      .populate('listingAgent')
+      .exec();
     if (!property) {
       throw new NotFoundException('Property not found');
     }
@@ -238,15 +242,18 @@ export class PropertyService {
     Object.assign(property, updateData);
     await property.save();
 
-    // Invalidate cache after updating a property
-    await this.invalidateCacheForProperties();
+    // // Invalidate cache after updating a property
+    // await this.invalidateCacheForProperties();
 
     return property;
   }
 
   // Delete a property
   async deleteProperty(id: string, user: any): Promise<void> {
-    const property = await this.propertyModel.findById(id).populate('listingAgent').exec();
+    const property = await this.propertyModel
+      .findById(id)
+      .populate('listingAgent')
+      .exec();
     if (!property) {
       throw new NotFoundException('Property not found');
     }
@@ -267,28 +274,27 @@ export class PropertyService {
     // Delete the property from the database
     await this.propertyModel.findByIdAndDelete(id);
 
-    // Invalidate cache after deleting a property
-    await this.invalidateCacheForProperties();
+    // // Invalidate cache after deleting a property
+    // await this.invalidateCacheForProperties();
   }
-
 
   // Invalidate cache for all properties
-  private async invalidateCacheForProperties() {
-    const keys = await this.redis.keys('properties:*');
-    if (keys.length > 0) {
-      await this.redis.del(...keys);
-      console.log('Invalidated all property cache keys');
-    }
-  }
+  // private async invalidateCacheForProperties() {
+  //   const keys = await this.redis.keys('properties:*');
+  //   if (keys.length > 0) {
+  //     await this.redis.del(...keys);
+  //     console.log('Invalidated all property cache keys');
+  //   }
+  // }
 
-  // Invalidate cache for a specific filter combination (more granular invalidation)
-  private async invalidateCacheForFilters(filters: any) {
-    const cacheKey = this.generateCacheKey(
-      filters.page,
-      filters.limit,
-      filters,
-    );
-    await this.redis.del(cacheKey); // Delete cache for this specific filter
-    console.log(`Invalidated cache for key: ${cacheKey}`);
-  }
+  // // Invalidate cache for a specific filter combination (more granular invalidation)
+  // private async invalidateCacheForFilters(filters: any) {
+  //   const cacheKey = this.generateCacheKey(
+  //     filters.page,
+  //     filters.limit,
+  //     filters,
+  //   );
+  //   await this.redis.del(cacheKey); // Delete cache for this specific filter
+  //   console.log(`Invalidated cache for key: ${cacheKey}`);
+  // }
 }
