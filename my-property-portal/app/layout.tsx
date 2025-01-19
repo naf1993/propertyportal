@@ -10,6 +10,9 @@ import { usePathname } from "next/navigation";
 import { Toaster } from "react-hot-toast";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
+let clientID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string;
+
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -24,7 +27,7 @@ export default function RootLayout({
 
   return (
     <Provider store={store}>
-      <GoogleOAuthProvider clientId="YOUR_GOOGLE_CLIENT_ID">
+      <GoogleOAuthProvider clientId={clientID}>
         <html lang="en">
           <body className="bg-gray-100">
             {!isExludedRoute && <Navbar />}
