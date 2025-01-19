@@ -24,6 +24,7 @@ export default function RootLayout({
     pathname?.startsWith("/admin") ||
     pathname?.startsWith("/login") ||
     pathname?.startsWith("/register");
+    
 
   return (
     <Provider store={store}>
