@@ -13,14 +13,13 @@ const fetchAgentProperties = async (agentId: string): Promise<Property[]> => {
   }
 };
 
-interface PageProps {
-  params: {
-    agentId: string;
-  };
-}
 
-export default async function Page({ params }: PageProps) {
-  const { agentId } = params;
+export default async function Page({
+    params,
+  }: {
+    params: Promise<{ agentId: string;  }>;
+  })  {
+  const { agentId } = await params;
 
   // Fetch properties by agent
   const properties = await fetchAgentProperties(agentId);
