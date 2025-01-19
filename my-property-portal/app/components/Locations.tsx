@@ -2,15 +2,10 @@
 import React, { useEffect, useState } from "react";
 import MapComponent2 from "./MapComponent2";
 import { Property } from "../types";
-
-
 interface LocationProps {
     properties:Property[]
 }
-
 const Locations:React.FC<LocationProps> = ({properties}) => {
-  
- 
   return (
     <>
       <h3 className="text-2xl tracking-wider text-center font-light uppercase mb-6">
@@ -25,5 +20,4 @@ const Locations:React.FC<LocationProps> = ({properties}) => {
     </>
   );
 };
-
 export default Locations;

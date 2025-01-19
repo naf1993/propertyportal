@@ -10,7 +10,6 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_API_URL;
 
-
 interface MapComponentProps {
   properties: Property[];
 }

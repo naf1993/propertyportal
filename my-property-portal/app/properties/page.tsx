@@ -1,24 +1,16 @@
 import axios from "axios";
-import PropertyList from "../components/PropertyList";
+import PropertyList from "../components/PropertyList"; // Assuming PropertyList is a client component
 import { API_URL } from "../apiUrl";
 
-// Define the Filters interface to handle query parameters
-interface Filters {
-  propertyType?: string;
-  latitude?: string;
-  longitude?: string;
-  bedrooms?: string;
-  minPrice?: string;
-  maxPrice?: string;
-  [key: string]: string | undefined;
+// Define the type for fetched data
+interface FetchedData {
+  properties: any[];
+  totalProperties: number;
+  totalPages: number;
+  page: number;
 }
 
-// Server-side data fetching function
-const fetchData = async (
-  page: number,
-  limit: number,
-  filters: Record<string, string | undefined>
-) => {
+const fetchData = async (page: number, limit: number, filters: Record<string, string | undefined>): Promise<FetchedData> => {
   try {
     const response = await axios.get(`${API_URL}/api/properties`, {
       params: { page, limit, ...filters },
@@ -44,43 +36,24 @@ const fetchData = async (
   }
 };
 
-// This is a server component that gets searchParams as part of the context
-const PropertiesPage = async ({ searchParams }: { searchParams: Record<string, string> }) => {
-  const page = searchParams.page || "1"; // Default page to 1 if undefined
-  const limit = searchParams.limit || "6"; // Default limit to 6 if undefined
+export default async function Page({ params }: { params: Promise<{ page: string; limit: string; filters: Record<string, string> }> }) {
+  // Wait for the Promise to resolve, then destructure with fallback defaults
+  const { page = "1", limit = "12", filters = {} } = await params;
 
-  // Build filters object based on searchParams
-  const filters: Filters = {
-    propertyType: searchParams.propertyType,
-    latitude: searchParams.latitude,
-    longitude: searchParams.longitude,
-    bedrooms: searchParams.bedrooms,
-    minPrice: searchParams.minPrice,
-    maxPrice: searchParams.maxPrice,
-  };
-
-  // Filter out undefined values from filters
-  const filteredParams = Object.fromEntries(
-    Object.entries(filters).filter(([_, value]) => value !== undefined)
-  );
-
+  // Convert page and limit to numbers
   const pageNumber = Number(page);
   const limitNumber = Number(limit);
 
-  console.log("Calling API with", pageNumber, limitNumber, filteredParams);
-
-  // Fetch data from API (server-side)
-  const data = await fetchData(pageNumber, limitNumber, filteredParams);
+  // Fetch data from API with filters
+  const data = await fetchData(pageNumber, limitNumber, filters);
 
   return (
     <div className="max-w-7xl mx-auto my-12">
       {data.properties.length > 0 ? (
-        <PropertyList {...data}  filters={filteredParams} />
+        <PropertyList {...data} filters={filters} />
       ) : (
         <div>No properties found.</div>
       )}
     </div>
   );
-};
-
-export default PropertiesPage;
+}
