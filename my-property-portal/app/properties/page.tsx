@@ -43,18 +43,17 @@ export default async function Page({
   params,
   searchParams,
 }: {
-  params: { page: string; limit: string; filters: Record<string, string> };
+  params: Promise<{ page: string; limit: string; filters: Record<string, string> }>;
   searchParams: Record<string, string>;
 }) {
-  // Await searchParams to ensure it is fully resolved
+  // Await params and searchParams to ensure they are fully resolved
+  const resolvedParams = await params;
   const resolvedSearchParams = await Promise.resolve(searchParams);
+
   console.log("Resolved filters in searchParams:", resolvedSearchParams); // Debug log
+  console.log("Resolved filters in params:", resolvedParams); // Debug log
 
-  // Await params to ensure it is fully resolved
-  const resolvedParams = await Promise.resolve(params);
   const { page = "1", limit = "12", filters = {} } = resolvedParams;
-  console.log("Resolved filters in params:", filters); // Debug log
-
   const pageNumber = Number(page);
   const limitNumber = Number(limit);
 
