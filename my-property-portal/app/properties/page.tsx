@@ -17,7 +17,6 @@ const fetchData = async (page: number, limit: number, filters: Record<string, st
       params: { page, limit, ...filters },
     });
 
-    console.log("Request URL:", response.config.url); // Debug log URL being requested
     const totalProperties = Number(response.data.totalProperties);
     const totalPages = response.data.totalPages || Math.ceil(totalProperties / limit);
     console.log("Total properties:", totalProperties); // Debug log
@@ -43,17 +42,18 @@ export default async function Page({
   params,
   searchParams,
 }: {
-  params: Promise<{ page: string; limit: string; filters: Record<string, string> }>;
-  searchParams: Promise<Record<string, string>>;
+  params: { page: string; limit: string; filters: Record<string, string> };
+  searchParams: Record<string, string>;
 }) {
-  // Await params and searchParams to ensure they are fully resolved
-  const resolvedParams = await params;
-  const resolvedSearchParams = await searchParams;
-
+  // Await searchParams to ensure it is fully resolved
+  const resolvedSearchParams = await Promise.resolve(searchParams);
   console.log("Resolved filters in searchParams:", resolvedSearchParams); // Debug log
-  console.log("Resolved filters in params:", resolvedParams); // Debug log
 
+  // Await params to ensure it is fully resolved
+  const resolvedParams = await Promise.resolve(params);
   const { page = "1", limit = "12", filters = {} } = resolvedParams;
+  console.log("Resolved filters in params:", filters); // Debug log
+
   const pageNumber = Number(page);
   const limitNumber = Number(limit);
 
