@@ -1,4 +1,3 @@
-// auth.service.ts
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
@@ -8,11 +7,16 @@ import { JwtPayload } from '../auth/auth.interface';
 import * as bcrypt from 'bcrypt';
 import { UserService } from 'src/user/user.service';
 import { CreateUserDto } from './dto/createuserdto';
+import { OAuth2Client } from 'google-auth-library';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
+  private oauthClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
   constructor(
-    private jwtService: JwtService, private readonly userService: UserService,
+    private jwtService: JwtService,
+    private readonly configService: ConfigService,
+    private readonly userService: UserService,
     @InjectModel('User') private userModel: Model<User>,
   ) {}
 
@@ -26,19 +30,19 @@ export class AuthService {
 
   async validateUserByCredentials(email: string, password: string) {
     const user = await this.userModel.findOne({ email });
-  
+
     if (!user) {
       console.log(`User with email ${email} not found`);
       return null; // User not found
     }
-  
+
     console.log('email', email);
     console.log('password (received):', password);
     console.log('password (stored):', user.password); // Log the stored password
-  
+
     console.log('Comparing passwords...');
     const isMatch = await bcrypt.compare(password, user.password);
-  
+
     if (isMatch) {
       console.log('Password match successful');
       return user; // Passwords match
@@ -47,41 +51,63 @@ export class AuthService {
       return null; // Passwords do not match
     }
   }
-  
-  
 
-  async generateJwtToken(user: User) {
-    const payload: JwtPayload = { userId: user._id.toString() };
+  async generateJwtToken(user: any) {
+    const payload = { username: user.username, sub: user.userId };
+    console.log('Generating JWT Token with payload:', payload);
+    console.log(
+      'Using JWT_SECRET_KEY:',
+      this.configService.get<string>('JWT_SECRET_KEY'),
+    );
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: this.jwtService.sign(payload, {
+        secret: this.configService.get<string>('JWT_SECRET_KEY'),
+      }),
     };
   }
 
-  async validateGoogleUser(googleId: string, email: string, displayName: string) {
-    // Try to find a user with the same Google ID
-    let user = await this.userModel.findOne({ googleId });
+  async validateGoogleToken(token: string): Promise<User | null> {
+    try {
+      // Verify the token using Google's API
+      const ticket = await this.oauthClient.verifyIdToken({
+        idToken: token,
+        audience: process.env.GOOGLE_CLIENT_ID, // Verify the token matches your client ID
+      });
 
+      const payload = ticket.getPayload();
+      const googleId = payload?.sub;
+      const email = payload?.email;
+      const name = payload?.name;
+
+      if (!googleId || !email) {
+        throw new Error('Invalid Google token');
+      }
+
+      // Find or create the user
+      return this.validateGoogleUser(googleId, email, name);
+    } catch (error) {
+      console.error('Google token validation failed', error);
+      return null;
+    }
+  }
+
+  async validateGoogleUser(googleId: string, email: string, name: string) {
+    let user = await this.userModel.findOne({ googleId });
     if (!user) {
-      // If user is not found, create a new one
-      user = new this.userModel({
+      user = await this.userModel.create({
         googleId,
         email,
-        name: displayName,
-        role: 'tenant', // Default role
-        isVerified: true, // Assuming Google users are verified
-        isActive: true,
-        isBanned: false,
+        name,
+        role: 'tenant',
       });
-      await user.save();
     }
-
     return user;
   }
-  
 
   async register(createUserDto: CreateUserDto) {
     const { name, email, password, role = 'tenant' } = createUserDto;
     const existingUser = await this.userModel.findOne({ email });
+    console.log('this is existing user', existingUser);
 
     if (existingUser) {
       throw new Error('Email already registered');
@@ -97,9 +123,13 @@ export class AuthService {
     await newUser.save();
 
     const payload: JwtPayload = { userId: newUser._id.toString() };
+    console.log('Generating JWT Token for user:', newUser); // Debug log
+    console.log('env',this.configService.get<string>('JWT_SECRET_KEY'))
     return {
       user: newUser,
-      access_token: this.jwtService.sign(payload),
+      access_token: this.jwtService.sign(payload, {
+        secret: this.configService.get<string>('JWT_SECRET_KEY'), // Explicitly pass the secret key here
+      }),
     };
   }
 }

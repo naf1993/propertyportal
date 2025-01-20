@@ -1,15 +1,13 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import path from 'path';
-import * as express from 'express';
-import * as dotenv from 'dotenv';
-import { PropertyService } from './property/property.service';
+import { config } from 'dotenv';
+config(); console.log('Loaded JWT_SECRET_KEY:', process.env.JWT_SECRET_KEY);
 
 async function bootstrap() { 
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-
+  console.log('Loaded JWT_SECRET_KEY:', process.env.JWT_SECRET_KEY); // Debug log
   app.setGlobalPrefix('api');
   // Enable CORS
   app.enableCors({

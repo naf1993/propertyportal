@@ -67,8 +67,16 @@ export class AuthController {
     return { access_token, user: userWithoutPassword };
   }
 
-  @Post('register')
-  async register(@Body() createUserDto: CreateUserDto) {
-    return await this.authService.register(createUserDto);
+  @Post('register') async register(@Body() createUserDto: any) {
+    try {
+      console.log('Received registration request:', createUserDto);
+      // Debug log
+      const user = await this.authService.register(createUserDto);
+      console.log('User registered successfully:', user);
+      return user;
+    } catch (error) {
+      console.error('Registration failed:', error.message);
+      throw new UnauthorizedException('Registration failed', error.message);
+    }
   }
 }
