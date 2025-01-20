@@ -1,6 +1,8 @@
 // app/slices/authSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axiosInstance from "../lib/axios"; // Import your Axios instance
+import { API_URL } from "../apiUrl";
+import axios from "axios";
 
 // Define types for the state
 interface User {
@@ -68,17 +70,18 @@ export const googleLogin = createAsyncThunk(
   "auth/google",
   async (token: string, { rejectWithValue }) => {
     try {
-      const res = await axiosInstance.post("/auth/google", { token });
-      console.log(res)
-      localStorage.setItem("token", res.data.access_token); // Store token in localStorage
-      return res.data; // Return the login data (user, token)
+      console.log('Sending request to:', `${API_URL}/api/auth/google`); // Debugging line
+      const res = await axios.post(`${API_URL}/api/auth/google`, { token });
+      console.log('Response received:', res); // Debugging line
+      localStorage.setItem("token", res.data.access_token);
+      return res.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Google login failed"
-      );
+      console.error('Request failed:', error.response?.data); // Debugging line
+      return rejectWithValue(error.response?.data?.message || "Google login failed");
     }
   }
 );
+
 
 export const registerUser = createAsyncThunk(
   "auth/register",

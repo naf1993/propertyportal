@@ -15,8 +15,9 @@ const Page = async () => {
   return (
     <>
       <Filter />
-      <Locations properties={data.properties} />
+     
       <Featured properties={data.properties}/>
+      <Locations properties={data.properties} />
     </>
   );
 };

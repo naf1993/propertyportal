@@ -19,15 +19,8 @@ const Footer = () => {
 
   return (
    <>
-      {isSmallScreen ? (
-        <FooterContentSmallScreen />
-      ) : (
-        <div className="bg-blue-950 text-white py-6 mt-8">
-          <div className="text-center">
-            <p>© {new Date().getFullYear()} Good Homes. All Rights Reserved.</p>
-          </div>
-        </div>
-      )}
+   {isSmallScreen && (<FooterContentSmallScreen/>)}
+  
     </>
   );
 };

@@ -32,7 +32,7 @@ const About = () => {
             <p className="mt-4 text-base sm:text-lg text-gray-600">
               Whether you are looking for a luxurious apartment in Dubai or a family-friendly villa in Abu Dhabi, GoodHomes provides a variety of properties across the UAE. Our goal is to help you find the perfect home that fits your lifestyle.
             </p>
-            <Link href="/properties">
+            <Link href="/">
               <p className="mt-6 inline-block bg-primary-500 text-white px-5 py-2 rounded-lg hover:bg-primary-600">
                 Explore Properties
               </p>
