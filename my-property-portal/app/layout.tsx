@@ -9,9 +9,7 @@ import Footer from "./components/Footer";
 import { usePathname } from "next/navigation";
 import { Toaster } from "react-hot-toast";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-
 let clientID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string;
-
 
 export default function RootLayout({
   children,

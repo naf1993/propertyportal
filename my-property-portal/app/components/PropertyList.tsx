@@ -19,41 +19,32 @@ const PropertyList = ({
   properties,
   totalProperties,
   page,
-  totalPages,filters
+  totalPages,
+  filters,
 }: Props) => {
- 
   const [currentPage, setCurrentPage] = useState<number>(page);
-  const [filteredProperties, setFilteredProperties] =
-    useState<Property[]>(properties);
+  const [filteredProperties, setFilteredProperties] = useState<Property[]>(properties);
   const propertiesSectionRef = useRef<any>(null); // Ref for scrolling to property section
- 
   const [sortOption, setSortOption] = useState<string>("");
-
+console.log('filters',filters)
   const getProperties = async (page: number, limit: number, filters: Record<string, string | undefined>) => {
-    const response = await axios.get(`${API_URL}/api/properties`, {
-      params: { page, limit,...filters},
-    });
-   
-    setFilteredProperties(response.data.properties);
+    try {
+      const response = await axios.get(`${API_URL}/api/properties`, {
+        params: { page, limit, ...filters },
+      });
+      setFilteredProperties(response.data.properties);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
   };
-  // Handle selection change for sorting
+
   const handleSortChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSortOption(event.target.value);
   };
 
-  // const handlePageChange = (newPage: number) => {
-  //   console.log('page number',newPage)
-  //   if (newPage >= 1 && newPage <= totalPages) {
-  //     if (newPage >= 1 && newPage <= totalPages) {
-  //       getProperties(newPage, 6); // Fetch properties for the new page
-  //     }
-  //   }
-  // };
-
   useEffect(() => {
-    let filtered = [...properties];
+    let filtered = [...filteredProperties];
 
-    // Apply sorting logic based on the selected option
     switch (sortOption) {
       case "newest":
         filtered = filtered.sort((a, b) => {
@@ -87,19 +78,16 @@ const PropertyList = ({
         break;
     }
 
-    setFilteredProperties(filtered); // Update filtered properties
+    setFilteredProperties(filtered);
   }, [sortOption, properties]);
 
   const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage); // Update the client-side currentPage state
+    setCurrentPage(newPage);
   };
 
-  // Trigger fetch when currentPage changes
   useEffect(() => {
-    console.log('this is current page',currentPage)
-    getProperties(currentPage,6,filters); // Re-fetch data when the page changes
-  }, [currentPage,filters]); // Dependency array ensures that useEffect runs when currentPage changes
-
+    getProperties(currentPage, 6, filters); // Re-fetch data when the page changes or filters change
+  }, [currentPage, filters]);
 
   return (
     <>
