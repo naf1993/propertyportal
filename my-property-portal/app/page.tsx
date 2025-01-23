@@ -8,7 +8,9 @@ import Featured from './components/Featured';
 
 const Page = async () => {
   try {
+    console.log(API_URL)
     const response = await fetch(`${API_URL}/api/properties`);
+    console.log(response)
     
     // Check for non-2xx HTTP status codes
     if (!response.ok) {
