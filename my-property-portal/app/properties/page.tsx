@@ -16,11 +16,12 @@ const fetchData = async (page: number, limit: number, filters: Record<string, st
     const response = await axios.get(`${API_URL}/api/properties`, {
       params: { page, limit, ...filters },
     });
-
+console.log('page',page)
+console.log('limit',limit)
     console.log("Request URL:", response.config.url); // Debug log URL being requested
-    const totalProperties = Number(response.data.totalProperties);
+    const totalProperties = Number(response.data.totalProperties) ? Number(response.data.totalProperties) : Number(response.data.totalProperties.value);
     const totalPages = response.data.totalPages || Math.ceil(totalProperties / limit);
-    console.log("Total properties:", totalProperties); // Debug log
+    console.log("Total properties:", typeof(totalProperties)); // Debug log
 
     return {
       properties: response.data.properties,
@@ -53,7 +54,7 @@ export default async function Page({
   console.log("Resolved filters in searchParams:", resolvedSearchParams); // Debug log
   console.log("Resolved filters in params:", resolvedParams); // Debug log
 
-  const { page = "1", limit = "12", filters = {} } = resolvedParams;
+  const { page = 1, limit = 6, filters = {} } = resolvedParams;
   const pageNumber = Number(page);
   const limitNumber = Number(limit);
 

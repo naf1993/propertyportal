@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { config } from 'dotenv';
+import { ElasticsearchService } from './elasticsearch/elasticsearch.service';
 config(); console.log('Loaded JWT_SECRET_KEY:', process.env.JWT_SECRET_KEY);
 
 async function bootstrap() { 
@@ -17,8 +18,14 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // const propservice = app.get(PropertyService)
-  // await propservice.createProperties()
+  // try {
+  //   const elasticservice = app.get(ElasticsearchService);
+  //   // Ensure the Elasticsearch sync operation is completed before starting the app
+  //   await elasticservice.syncPropertiesToElasticSearch();
+  //   console.log('Elasticsearch sync completed');
+  // } catch (error) {
+  //   console.error('Error syncing properties to Elasticsearch:', error);
+  // }
 
   await app.listen(process.env.PORT || 5000);
 }

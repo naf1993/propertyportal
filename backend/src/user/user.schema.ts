@@ -41,7 +41,20 @@ export interface User extends Document {
   preferredLanguage?: string;
   referralCode?: string;
 }
+export interface UserRecommendation extends Document {
+  userId: Schema.Types.ObjectId;
+  recommendations: [{ properties: Schema.Types.ObjectId[]; score: Number }];
+}
 
+export const UserRecommendationSchema = new Schema<UserRecommendation>({
+  userId: { type: Schema.Types.ObjectId, ref: 'User' },
+  recommendations: [
+    {
+      properties: [{ type: Schema.Types.ObjectId, ref: 'Property' }],
+      score: { type: Number, required: true },
+    },
+  ],
+});
 // Define a Mongoose schema for the User model
 export const UserSchema = new Schema<User>({
   name: { type: String, required: true },
@@ -54,11 +67,11 @@ export const UserSchema = new Schema<User>({
   city: { type: String },
   state: { type: String },
   country: { type: String },
-  role: { 
-    type: String, 
-    enum: ['admin', 'agent', 'tenant'], 
-    required: true, 
-    default: 'tenant'  // Default role set to 'tenant'
+  role: {
+    type: String,
+    enum: ['admin', 'agent', 'tenant'],
+    required: true,
+    default: 'tenant', // Default role set to 'tenant'
   },
   isVerified: { type: Boolean, default: false },
   isActive: { type: Boolean, default: true },
@@ -84,4 +97,5 @@ export const UserSchema = new Schema<User>({
 });
 
 // Create a Mongoose model for the User
+export const UserRecommendationModel = model<UserRecommendation>('UserRecommendation',UserRecommendationSchema)
 export const UserModel = model<User>('User', UserSchema);

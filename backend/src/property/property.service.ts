@@ -9,6 +9,7 @@ import { Property } from './property.schema';
 import { CreatePropertyDto, UpdatePropertyDto } from './property.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { User } from 'src/user/user.schema';
+import { ElasticsearchService } from 'src/elasticsearch/elasticsearch.service';
 
 @Injectable()
 export class PropertyService {
@@ -16,6 +17,7 @@ export class PropertyService {
     @InjectModel('Property') private propertyModel: Model<Property>,
     @InjectModel('User') private userModel: Model<User>,
     private readonly cloudinaryService: CloudinaryService,
+    private readonly elasticSearchService: ElasticsearchService,
   ) {
     // // Initialize Redis client
     // this.redis = new Redis({
@@ -112,87 +114,91 @@ export class PropertyService {
   }
 
   // Get properties with filters, pagination, and caching
-  async getProperties(page: number, limit: number, filters: any) {
-    console.log(filters);
-    // const cacheKey = this.generateCacheKey(page, limit, filters);
+  async getProperties(
+    page: number,
+    limit: number,
+    filters: any
+  ) {
+    if (filters?.textQuery && filters?.textQuery?.length > 10) {
+    
+      let elasticSearchQuery = filters.textQuery
+      return this.elasticSearchService.searchProperties(
+        elasticSearchQuery,
+        page,
+        limit,
+        filters,
+      );
+    } else {
+      const query: any = {};
 
-    // // Check if cached data exists
-    // const cachedData = await this.redis.get(cacheKey);
-    // if (cachedData) {
-    //   console.log('Cache hit for:', cacheKey);
-    //   return JSON.parse(cachedData); // Return cached data if available
-    // }
-
-    // console.log('Cache miss for:', cacheKey);
-
-    // Build query object based on filters
-    const query: any = {};
-
-    if (filters.propertyType) {
-      query.propertyType = { $regex: new RegExp(filters.propertyType, 'i') };
-    }
-    if (filters.minPrice) {
-      query.price = { $gte: Number(filters.minPrice) };
-    }
-    if (filters.maxPrice) {
-      query.price = query.price || {}; // Allow both min and max price filters together
-      query.price.$lte = Number(filters.maxPrice);
-    }
-    if (filters.city) {
-      query.city = { $regex: new RegExp(filters.city, 'i') }; // Case insensitive search
-    }
-
-    if (filters.bedrooms) {
-      query.bedrooms = { $lte: Number(filters.bedrooms) };
-      console.log(typeof query.bedrooms);
-    }
-
-    if (filters.latitude && filters.longitude) {
-      const lat = parseFloat(filters.latitude);
-      const lng = parseFloat(filters.longitude);
-      if (!isNaN(lat) && !isNaN(lng)) {
-        const radiusInKm = 20;
-        const radiusInRadians = radiusInKm / 6371;
-        query.coordinates = {
-          $geoWithin: {
-            $centerSphere: [[lat, lng], radiusInRadians],
-          },
-        };
-      } else {
-        console.error('Invalid locations');
-        throw new BadRequestException('Invalid location');
+      if (filters.propertyType) {
+        query.propertyType = { $regex: new RegExp(filters.propertyType, 'i') };
       }
+      if (filters.minPrice) {
+        query.price = { $gte: Number(filters.minPrice) };
+      }
+      if (filters.maxPrice) {
+        query.price = query.price || {}; // Allow both min and max price filters together
+        query.price.$lte = Number(filters.maxPrice);
+      }
+      if (filters.city) {
+        query.city = { $regex: new RegExp(filters.city, 'i') }; // Case insensitive search
+      }
+
+      if (filters.bedrooms) {
+        query.bedrooms = { $lte: Number(filters.bedrooms) };
+        console.log(typeof query.bedrooms);
+      }
+
+      if (filters.latitude && filters.longitude) {
+        const lat = parseFloat(filters.latitude);
+        const lng = parseFloat(filters.longitude);
+        if (!isNaN(lat) && !isNaN(lng)) {
+          const radiusInKm = 20;
+          const radiusInRadians = radiusInKm / 6371;
+          query.coordinates = {
+            $geoWithin: {
+              $centerSphere: [[lat, lng], radiusInRadians],
+            },
+          };
+        } else {
+          console.error('Invalid locations');
+          throw new BadRequestException('Invalid location');
+        }
+      }
+      console.log('this is query', query);
+      // Count total number of properties that match the filters
+      const totalProperties = await this.propertyModel.countDocuments(query);
+      const totalPages = Math.ceil(totalProperties / limit);
+
+      // Ensure requested page doesn't exceed total pages
+      const validPage = page < 1 ? 1 : page;
+      const skip = (validPage - 1) * limit;
+      console.log(page)
+      console.log(limit)
+
+      // Retrieve the filtered and paginated properties
+      console.log('this is query', query);
+      const properties = await this.propertyModel
+        .find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .exec();
+
+      const result = {
+        properties,
+        totalProperties,
+        page: validPage,
+        totalPages,
+      };
+      console.log('this is result properites length', totalProperties);
+
+      // Cache the result
+      // await this.redis.set(cacheKey, JSON.stringify(result), 'EX', 60);
+
+      return result;
     }
-    console.log('this is query', query);
-    // Count total number of properties that match the filters
-    const totalProperties = await this.propertyModel.countDocuments(query);
-    const totalPages = Math.ceil(totalProperties / limit);
-
-    // Ensure requested page doesn't exceed total pages
-    const validPage = page < 1 ? 1 : page;
-    const skip = (validPage - 1) * limit;
-
-    // Retrieve the filtered and paginated properties
-    console.log('this is query', query);
-    const properties = await this.propertyModel
-      .find(query)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .exec();
-
-    const result = {
-      properties,
-      totalProperties,
-      page: validPage,
-      totalPages,
-    };
-    console.log('this is result properites length', totalProperties);
-
-    // Cache the result
-    // await this.redis.set(cacheKey, JSON.stringify(result), 'EX', 60);
-
-    return result;
   }
 
   // Get a single property by ID
@@ -239,9 +245,9 @@ export class PropertyService {
         throw new BadRequestException('Invalid coordinates format');
       }
     }
-    let updated = {...updateData,listingAgent: user._id}
+    let updated = { ...updateData, listingAgent: user._id };
 
-    Object.assign(property, updated,);
+    Object.assign(property, updated);
     await property.save();
 
     // // Invalidate cache after updating a property

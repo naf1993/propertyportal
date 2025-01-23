@@ -1,0 +1,13 @@
+.search-icon {
+    position: absolute;
+    top: 0.75rem; /* top-3 */
+    right: 0.75rem; /* right-3 */
+    color: #3b82f6; /* text-blue-500 */
+    width: 1rem; /* w-4 */
+    height: 1rem; /* h-4 */
+  }
+  
+  .search-icon svg {
+    stroke-width: 2; /* Adjust stroke width */
+  }
+  

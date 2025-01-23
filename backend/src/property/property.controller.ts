@@ -71,7 +71,7 @@ export class PropertyController {
   async getProperties(
     @Query('page') page?: number,
     @Query('limit') limit?: number,
-    @Query() filters?: any,
+    @Query() filters?: any
   ) {
     if (page === undefined || limit === undefined || filters === undefined) {
       return await this.propertyService.getAllProperties();

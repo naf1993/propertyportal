@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { AuthService } from './auth/auth.service';
 import { AuthController } from './auth/auth.controller';
 import { JwtService } from '@nestjs/jwt';
+import { ElasticSearchModule } from './elasticsearch/elasticsearch.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { JwtService } from '@nestjs/jwt';
     PropertyModule,
     UserModule,
     AuthModule,
+    ElasticSearchModule
   ],
   controllers: [AppController, AuthController],
   providers: [AppService, AuthService, JwtService],

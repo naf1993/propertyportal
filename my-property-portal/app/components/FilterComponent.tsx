@@ -6,6 +6,10 @@ import axios from "axios";
 import Select from "react-select";
 import debounce from "lodash.debounce";
 import mapboxgl from "mapbox-gl";
+import { IoHome } from "react-icons/io5";
+import { LuDelete } from "react-icons/lu";
+import { IoSearchOutline } from "react-icons/io5";
+import { root } from "postcss";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_API_URL;
 interface Location {
@@ -24,6 +28,7 @@ const Filter = () => {
   const [maxPrice, setMaxPrice] = useState<number>(0);
   const [roomCount, setRoomCount] = useState<number | string>("");
   const [sortOption, setSortOption] = useState<string>("");
+  const [textSearch, setTextSearch] = useState<string>("");
 
   const handleGetLocations = async (query: string) => {
     if (!query || query.length < 3) return;
@@ -74,6 +79,21 @@ const Filter = () => {
     setSelectedLocation(selectedOption);
   };
 
+  const handleSearchText = () => {
+    console.log('hello')
+    console.log('this is text qeuery',textSearch)
+    const query:{[key:string]:string} = {}
+    if(textSearch.length > 10){
+      query.textQuery = textSearch
+    }
+    console.log(query)
+
+    const queryString = new URLSearchParams(Object.entries(query).map(([key,value])=>[key,String(value)])).toString()
+    if(pathname !== `/properties?${queryString}`){
+      router.push(`/properties?${queryString}`)
+    }
+  }
+
   const handleSearch = () => {
     const updatedQuery: { [key: string]: string | number | boolean } = {};
 
@@ -98,6 +118,7 @@ const Filter = () => {
   };
 
   const resetFilters = () => {
+    setTextSearch('')
     setSelectedLocation(null);
     setRoomCount("");
     setMinPrice(0);
@@ -124,7 +145,28 @@ const Filter = () => {
           </p>
 
           {/* Search Form */}
-          <div className="flex flex-col gap-1">
+
+          <div className="flex flex-col gap-2 sm:gap-2">
+            <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 w-full sm:w-[600px] mx-auto relative">
+              <input
+                type="text"
+                value={textSearch}
+                onChange={(e) => setTextSearch(e.target.value)}
+                placeholder="I want 3 bedroom apartment in Dubai"
+                className="flex-1 p-2 border rounded-md w-full sm:w-auto bg-white text-sm text-gray-700 placeholder-gray-400 focus:outline-none "
+              />
+              <button className="absolute top-3 right-3 bg-none border-0" onClick={handleSearchText}>
+                <IoSearchOutline className="search-icon w-4 h-4 text-blue-500" />
+              </button>
+
+              <button
+                onClick={handleSearch}
+                className="hidden sm:block bg-blue-400 text-white uppercase py-2 px-6 rounded-md text-xs font-light shadow-lg"
+              >
+                Find Properties
+              </button>
+            </div>
+
             <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 w-full sm:w-[600px] mx-auto">
               <Select
                 isLoading={loading}
@@ -163,8 +205,8 @@ const Filter = () => {
               </select>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:justify-start gap-2 sm:gap-3 mt-4 sm:w-[600px] sm:mx-auto">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full sm:gap-1">
+            <div className="flex flex-col sm:flex-row gap-1 mt-4 sm:w-[600px] sm:mx-auto">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
                 <label
                   htmlFor="minPrice"
                   className="text-xs uppercase font-light text-white mb-2"
@@ -179,7 +221,7 @@ const Filter = () => {
                   className="p-2 border rounded-md w-full sm:w-auto bg-white text-sm text-gray-700 placeholder-gray-400 focus:outline-none "
                 />
               </div>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between sm:gap-1 w-full">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
                 <label
                   htmlFor="maxPrice"
                   className="text-xs uppercase font-light text-white mb-2"
@@ -194,11 +236,21 @@ const Filter = () => {
                   className="p-2 border rounded-md w-full sm:w-auto bg-white text-sm text-gray-700 placeholder-gray-400 focus:outline-none"
                 />
               </div>
-
-            
+              <button
+                onClick={handleSearch}
+                className="hidden sm:block bg-blue-400 text-white uppercase py-2 px-6 rounded-md text-xs font-light shadow-lg"
+              >
+                <IoHome className="w-4 h-4" />
+              </button>
+              <button
+                onClick={resetFilters}
+                className="hidden sm:block bg-red-400 text-white uppercase py-2 px-6 rounded-md text-xs font-light shadow-lg"
+              >
+                <LuDelete className="w-4 h-4" />
+              </button>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-4 sm:w-[600px] sm:mx-auto">
+            <div className="flex flex-col sm:hidden">
               <button
                 onClick={handleSearch}
                 className="bg-blue-400 text-white uppercase py-2 px-6 rounded-md text-xs font-light shadow-lg w-full"
@@ -213,7 +265,6 @@ const Filter = () => {
               </button>
             </div>
           </div>
-          
         </div>
       </div>
     </div>
