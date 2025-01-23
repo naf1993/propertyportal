@@ -97,5 +97,5 @@ export const UserSchema = new Schema<User>({
 });
 
 // Create a Mongoose model for the User
-export const UserRecommendationModel = model<UserRecommendation>('UserRecommendation',UserRecommendationSchema)
+//export const UserRecommendationModel = model<UserRecommendation>('UserRecommendation',UserRecommendationSchema)
 export const UserModel = model<User>('User', UserSchema);

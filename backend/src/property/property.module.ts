@@ -17,6 +17,7 @@ import { ElasticsearchService } from 'src/elasticsearch/elasticsearch.service';
         schema: UserSchema,
       },
     ]),
+    
   ],
   providers: [PropertyService, CloudinaryService,ElasticsearchService],
   controllers: [PropertyController],

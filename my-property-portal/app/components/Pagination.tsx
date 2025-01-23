@@ -12,7 +12,7 @@ const Pagination: React.FC<PaginationProps> = ({
   totalPages,
   onPageChange,
 }) => {
-  console.log('current page pagination component',currentPage)
+ 
   const handlePrevPage = () => {
     if (currentPage > 1) {
       onPageChange(currentPage - 1); // Go to the previous page

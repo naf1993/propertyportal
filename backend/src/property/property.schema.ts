@@ -1,4 +1,25 @@
-import { Schema, Document } from 'mongoose';
+import { Schema, Document, model } from 'mongoose';
+
+export const InteractionSchema = new Schema(
+  {
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: false },
+
+    sessionId: {
+      type: String,
+      required: false, // Make sessionId optional for logged-in users
+    },
+    productId: { type: Schema.Types.ObjectId, ref: 'Property', required: true },
+
+    interactionType: {
+      type: String,
+      enum: ['view', 'favourites'], // Can be extended with more interaction types
+      required: true,
+    },
+  },
+  { timestamps: true }, // Automatically adds createdAt and updatedAt fields
+
+  // Create the model from the schema
+);
 
 export const PropertySchema = new Schema(
   {
@@ -57,3 +78,11 @@ export interface Property extends Document {
   createdAt: Date; // This field will now be automatically populated
   updatedAt: Date; // This field will now be automatically populated
 }
+export interface Interaction extends Document {
+  listingAgent: Schema.Types.ObjectId;
+}
+
+export const Interaction = model<Interaction>(
+  'UserRecommendation',
+  InteractionSchema,
+);

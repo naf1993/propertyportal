@@ -18,15 +18,19 @@ interface Props {
 
 const PropertyList = React.memo(
   ({ properties, totalProperties, page, totalPages, filters }: Props) => {
-    console.log(totalProperties, page, totalPages);
+   
     const [currentPage, setCurrentPage] = useState<number>(page);
     const [initialPage, setInitialPage] = useState<number>(page);
     const [filteredProperties, setFilteredProperties] =
       useState<Property[]>(properties);
     const propertiesSectionRef = useRef<any>(null); // Ref for scrolling to property section
     const [sortOption, setSortOption] = useState<string>("");
-    const [isFirstRender, setIsFirstRender] = useState<boolean>(true);
+    // const [isFirstRender, setIsFirstRender] = useState<boolean>(true);
     const [isPageChanged, setPageChanged] = useState<boolean>(false);
+    const isFirstRender = useRef(true);
+    const [hasRendered, setHasRendered] = useState<boolean>(false);
+
+   
 
     const getProperties = async (
       page: number,
@@ -102,22 +106,58 @@ const PropertyList = React.memo(
     const handlePageChange = (newPage: number) => {
       setCurrentPage(newPage);
     };
+    useEffect(() => {
+      if (hasRendered) {
+        console.log('Fetching properties');
+        getProperties(currentPage, 6, filters);
+      } else {
+        setHasRendered(true);
+      }
+    }, [currentPage, filters]);
 
+    // useEffect(() => {
+    //   if (isFirstRender.current) {
+    //     isFirstRender.current = false;
+    //     return;
+    //   }
 
-useEffect(() => {
-  console.log("Setting initial render to false after first render");
-  setIsFirstRender(false);
-}, []);
+    //   console.log('Fetching properties');
+    //   getProperties(currentPage, 6, filters);
 
-useEffect(() => {
-  if (!isFirstRender) {
-    console.log("Initial render finished", isFirstRender);
-    if (currentPage !== initialPage || isFirstRender === false) {
-      console.log("Page has changed or it's no longer the first render");
-      getProperties(currentPage, 6, filters);
-    }
-  }
-}, [currentPage, isFirstRender, filters]);
+    // }, [currentPage, filters]);
+
+// useEffect(() => {
+//   console.log('first effect')
+//   console.log("Setting initial render to false after first render");
+//   setIsFirstRender(false);
+// }, []);
+
+// useEffect(() => {
+//   if (!isFirstRender) {
+//     if (currentPage !== initialPage) {
+//       console.log('2nd effect');
+//       console.log('fetching if page change');
+//       getProperties(currentPage, 6, filters);
+//     } else if (currentPage === initialPage && !isFirstRender) {
+//       console.log('3rd effect');
+//       getProperties(currentPage, 6, filters);
+//     }
+//   }
+// }, [isFirstRender, currentPage, initialPage, filters]);
+
+// useEffect(()=>{
+//   if(currentPage === Number(1) && !isFirstRender){
+//     console.log('current page is 1')
+//     getProperties(currentPage, 6, filters);
+
+//   }
+//   if (currentPage !== initialPage || isFirstRender === false) {
+//     console.log("Page has changed or it's no longer the first render");
+//     getProperties(currentPage, 6, filters);
+//   }
+
+// },[currentPage,isFirstRender,filters])
+
 
 
     return (
