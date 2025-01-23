@@ -14,6 +14,7 @@ export class ElasticsearchService {
   private readonly logger = new Logger(ElasticsearchService.name);
   private client: Client;
 
+  
   constructor(@InjectModel('Property') private propertyModel: Model<Property>) {
     this.client = new Client({
       node: process.env.ELASTIC_SEARCH_URL,
