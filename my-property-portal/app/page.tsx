@@ -4,6 +4,8 @@ import Filter from './components/FilterComponent';
 import Locations from './components/Locations';
 import { API_URL } from './apiUrl';
 import { Property } from './types';
+
+
 import Featured from './components/Featured';
 
 const Page = async () => {
