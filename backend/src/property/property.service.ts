@@ -146,7 +146,7 @@ export class PropertyService {
       }
 
       if (filters.bedrooms) {
-        query.bedrooms = { $lte: Number(filters.bedrooms) };
+        query.bedrooms = { $gte: Number(filters.bedrooms) };
         console.log(typeof query.bedrooms);
       }
 

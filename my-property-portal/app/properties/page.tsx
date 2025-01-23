@@ -1,6 +1,8 @@
 import axios from "axios";
 import PropertyList from "../components/PropertyList"; // Assuming PropertyList is a client component
 import { API_URL } from "../apiUrl";
+import { Suspense } from "react";
+import Spinner from "../components/Spinner";
 
 // Define the type for fetched data
 interface FetchedData {
@@ -10,18 +12,25 @@ interface FetchedData {
   page: number;
 }
 
-const fetchData = async (page: number, limit: number, filters: Record<string, string | undefined>): Promise<FetchedData> => {
+const fetchData = async (
+  page: number,
+  limit: number,
+  filters: Record<string, string | undefined>
+): Promise<FetchedData> => {
   try {
     console.log("Fetching data with filters:", filters); // Debug log
     const response = await axios.get(`${API_URL}/api/properties`, {
       params: { page, limit, ...filters },
     });
-console.log('page',page)
-console.log('limit',limit)
+    console.log("page", page);
+    console.log("limit", limit);
     console.log("Request URL:", response.config.url); // Debug log URL being requested
-    const totalProperties = Number(response.data.totalProperties) ? Number(response.data.totalProperties) : Number(response.data.totalProperties.value);
-    const totalPages = response.data.totalPages || Math.ceil(totalProperties / limit);
-    console.log("Total properties:", typeof(totalProperties)); // Debug log
+    const totalProperties = Number(response.data.totalProperties)
+      ? Number(response.data.totalProperties)
+      : Number(response.data.totalProperties.value);
+    const totalPages =
+      response.data.totalPages || Math.ceil(totalProperties / limit);
+    console.log("Total properties:", typeof totalProperties); // Debug log
 
     return {
       properties: response.data.properties,
@@ -44,7 +53,11 @@ export default async function Page({
   params,
   searchParams,
 }: {
-  params: Promise<{ page: string; limit: string; filters: Record<string, string> }>;
+  params: Promise<{
+    page: string;
+    limit: string;
+    filters: Record<string, string>;
+  }>;
   searchParams: Promise<Record<string, string>>;
 }) {
   // Await params and searchParams to ensure they are fully resolved
@@ -62,12 +75,14 @@ export default async function Page({
   const data = await fetchData(pageNumber, limitNumber, resolvedSearchParams);
 
   return (
-    <div className="max-w-7xl mx-auto my-12">
-      {data.properties.length > 0 ? (
-        <PropertyList {...data} filters={resolvedSearchParams} />
-      ) : (
-        <div>No properties found.</div>
-      )}
-    </div>
+    <Suspense fallback={<Spinner />}>
+      <div className="max-w-7xl mx-auto my-12">
+        {data.properties && data.properties.length > 0 ? (
+          <PropertyList {...data} filters={resolvedSearchParams} />
+        ) : (
+          <div>No properties found.</div>
+        )}
+      </div>
+    </Suspense>
   );
 }
