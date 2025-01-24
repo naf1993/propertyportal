@@ -7,6 +7,7 @@ import PropertyCard from "./PropertyCard";
 import Pagination from "./Pagination";
 import axios from "axios";
 import { API_URL } from "../apiUrl";
+import ButtonBack from "./ButtonBack";
 
 interface Props {
   properties: Property[]; // Initial paginated properties
@@ -162,6 +163,7 @@ const PropertyList = React.memo(
 
     return (
       <>
+      <ButtonBack/>
         <div className="md:flex items-center justify-end mb-4">
           <select
             value={sortOption}

@@ -12,7 +12,7 @@ const ButtonBack = () => {
   return (
     <button
       onClick={handleGoBack}
-      className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+      className="px-3 py-2 bg-primary-400 text-white rounded-lg hover:bg-stone-400"
     >
       Go Back
     </button>
